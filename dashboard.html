@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>0harness — Loop Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --orange: #db6d28;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  h2 { font-size: 18px; margin-bottom: 12px; color: var(--accent); }
+  h3 { font-size: 15px; margin-bottom: 8px; }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-subtitle { color: var(--text-dim); font-size: 14px; }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    color: var(--text-dim);
+    border-bottom: 2px solid transparent;
+    font-size: 14px;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: inherit;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .batch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .batch-card:hover { border-color: var(--accent); }
+
+  .batch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .batch-meta { color: var(--text-dim); font-size: 13px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+  .badge-orange { background: rgba(219, 109, 40, 0.15); color: var(--orange); }
+  .badge-blue { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
+
+  .iteration-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.1s;
+  }
+
+  .iteration-row:hover { background: rgba(88, 166, 255, 0.05); }
+  .iteration-row:last-child { border-bottom: none; }
+
+  .iteration-num { font-weight: 600; min-width: 80px; }
+  .iteration-task { flex: 1; color: var(--text-dim); }
+  .iteration-time { color: var(--text-dim); font-size: 12px; min-width: 140px; text-align: right; }
+
+  .detail-view {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+  }
+
+  .detail-view pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 16px;
+    font-family: inherit;
+  }
+
+  .back-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  .md-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .md-content pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .tieoff-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .tieoff-card:hover { border-color: var(--orange); }
+
+  .tieoff-task { font-weight: 600; margin-bottom: 4px; }
+  .tieoff-reason { color: var(--text-dim); font-size: 13px; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .loading { color: var(--text-dim); padding: 24px; text-align: center; }
+
+  .narrative {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>0harness Dashboard</h1>
+    <div class="header-subtitle" id="project-name">Loading...</div>
+  </div>
+  <div>
+    <button class="back-btn" onclick="location.reload()">Refresh</button>
+  </div>
+</div>
+
+<div class="stat-grid" id="stats"></div>
+
+<div class="tabs">
+  <button class="tab active" data-panel="batches">Batches</button>
+  <button class="tab" data-panel="tieoffs">Tie-offs</button>
+  <button class="tab" data-panel="plan">Implementation Plan</button>
+  <button class="tab" data-panel="ideas">Ideas</button>
+</div>
+
+<div id="batches" class="panel active"></div>
+<div id="tieoffs" class="panel"></div>
+<div id="plan" class="panel"></div>
+<div id="ideas" class="panel"></div>
+
+<script>
+// ── Data fetching ──
+
+async function fetchText(path) {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    return await res.text();
+  } catch { return null; }
+}
+
+// ── Parsing ──
+
+function parseLooplog(text) {
+  const lines = text.split('\n');
+  const batches = [];
+  let currentBatch = null;
+
+  for (const line of lines) {
+    const batchStart = line.match(/🔵 BATCH START — iterations=(\d+) — (.+)/);
+    const batchEnd = line.match(/🔵 BATCH END — (.+?) — (.+)/);
+    const iterStart = line.match(/🟡 STARTED iteration (\d+) — (.+)/);
+    const iterFinish = line.match(/🟢 FINISHED iteration (\d+) — (.+)/);
+    const iterFail = line.match(/🔴 FAILED iteration (\d+) — (.+)/);
+
+    if (batchStart) {
+      currentBatch = {
+        plannedIterations: parseInt(batchStart[1]),
+        startTime: batchStart[2].trim(),
+        endTime: null,
+        iterations: [],
+        status: 'running'
+      };
+      batches.push(currentBatch);
+    } else if (batchEnd && currentBatch) {
+      currentBatch.endTime = batchEnd[2].trim();
+      currentBatch.status = 'completed';
+    } else if (iterStart) {
+      const iter = {
+        number: parseInt(iterStart[1]),
+        startTime: iterStart[2].trim(),
+        endTime: null,
+        status: 'running'
+      };
+      if (currentBatch) {
+        currentBatch.iterations.push(iter);
+      } else {
+        // Iteration outside a batch — create an implicit batch
+        currentBatch = {
+          plannedIterations: '?',
+          startTime: iterStart[2].trim(),
+          endTime: null,
+          iterations: [iter],
+          status: 'running'
+        };
+        batches.push(currentBatch);
+      }
+    } else if (iterFinish && currentBatch) {
+      const num = parseInt(iterFinish[1]);
+      const iter = currentBatch.iterations.find(i => i.number === num);
+      if (iter) {
+        iter.endTime = iterFinish[2].trim();
+        iter.status = 'finished';
+      }
+    } else if (iterFail && currentBatch) {
+      const num = parseInt(iterFail[1]);
+      const iter = currentBatch.iterations.find(i => i.number === num);
+      if (iter) {
+        iter.endTime = iterFail[2].trim();
+        iter.status = 'failed';
+      }
+    }
+  }
+
+  return batches;
+}
+
+function parseTieoffs(planText) {
+  if (!planText) return [];
+  const tieoffs = [];
+  const lines = planText.split('\n');
+  for (const line of lines) {
+    const match = line.match(/⛔ ABANDONED:\s*(.+)/);
+    if (match) {
+      const taskMatch = line.match(/\[.\]\s*(.*?)⛔/);
+      tieoffs.push({
+        task: taskMatch ? taskMatch[1].trim() : line.trim(),
+        reason: match[1].trim()
+      });
+    }
+  }
+  return tieoffs;
+}
+
+// ── Rendering ──
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function statusBadge(status) {
+  const map = {
+    finished: ['Finished', 'badge-green'],
+    failed: ['Failed', 'badge-red'],
+    running: ['Running', 'badge-yellow'],
+    completed: ['Completed', 'badge-green'],
+    stopped: ['Stopped', 'badge-yellow']
+  };
+  const [label, cls] = map[status] || ['Unknown', 'badge-blue'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function renderStats(batches) {
+  const totalBatches = batches.length;
+  const totalIterations = batches.reduce((sum, b) => sum + b.iterations.length, 0);
+  const finished = batches.reduce((sum, b) =>
+    sum + b.iterations.filter(i => i.status === 'finished').length, 0);
+  const failed = batches.reduce((sum, b) =>
+    sum + b.iterations.filter(i => i.status === 'failed').length, 0);
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-box"><div class="stat-value">${totalBatches}</div><div class="stat-label">Batches</div></div>
+    <div class="stat-box"><div class="stat-value">${totalIterations}</div><div class="stat-label">Total Iterations</div></div>
+    <div class="stat-box"><div class="stat-value">${finished}</div><div class="stat-label">Succeeded</div></div>
+    <div class="stat-box"><div class="stat-value">${failed}</div><div class="stat-label">Failed</div></div>
+  `;
+}
+
+function renderBatches(batches) {
+  const container = document.getElementById('batches');
+
+  if (batches.length === 0) {
+    container.innerHTML = '<div class="empty-state">No batches yet. Run <code>./loop.sh</code> to get started.</div>';
+    return;
+  }
+
+  // Show most recent first
+  const reversed = [...batches].reverse();
+
+  container.innerHTML = reversed.map((batch, reversedIdx) => {
+    const batchIdx = batches.length - 1 - reversedIdx;
+    const finished = batch.iterations.filter(i => i.status === 'finished').length;
+    const failed = batch.iterations.filter(i => i.status === 'failed').length;
+    const total = batch.iterations.length;
+
+    return `
+      <div class="batch-card" onclick="showBatch(${batchIdx})">
+        <div class="batch-header">
+          <div>
+            <strong>Batch ${batchIdx + 1}</strong>
+            ${statusBadge(batch.status)}
+          </div>
+          <div class="batch-meta">
+            ${finished}/${total} succeeded${failed > 0 ? `, ${failed} failed` : ''}
+          </div>
+        </div>
+        <div class="batch-meta">
+          Started: ${batch.startTime}${batch.endTime ? ` — Ended: ${batch.endTime}` : ' — In progress...'}
+          <br>Planned: ${batch.plannedIterations} iteration(s)
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function showBatch(batchIdx) {
+  const batch = window._batches[batchIdx];
+  const container = document.getElementById('batches');
+
+  let iterationRows = '';
+  for (const iter of batch.iterations) {
+    const logText = await fetchText(`looplog/looplog-${iter.number}.md`);
+    const taskMatch = logText ? logText.match(/\*\*Task\*\*:\s*(.+)/) : null;
+    const task = taskMatch ? taskMatch[1] : '(no log available)';
+
+    iterationRows += `
+      <div class="iteration-row" onclick="showIteration(${iter.number})">
+        <div class="iteration-num">
+          #${iter.number} ${statusBadge(iter.status)}
+        </div>
+        <div class="iteration-task">${escapeHtml(task)}</div>
+        <div class="iteration-time">${iter.startTime}</div>
+      </div>
+    `;
+  }
+
+  // Build narrative
+  const finished = batch.iterations.filter(i => i.status === 'finished').length;
+  const failed = batch.iterations.filter(i => i.status === 'failed').length;
+
+  let narrative = `Batch of ${batch.iterations.length} iteration(s), started ${batch.startTime}.`;
+  if (batch.endTime) narrative += ` Ended ${batch.endTime}.`;
+  narrative += ` ${finished} succeeded, ${failed} failed.`;
+
+  container.innerHTML = `
+    <button class="back-btn" onclick="renderBatches(window._batches)">← All Batches</button>
+    <h2>Batch ${batchIdx + 1}</h2>
+    <div class="narrative">${escapeHtml(narrative)}</div>
+    <div class="detail-view">
+      ${iterationRows || '<div class="empty-state">No iterations in this batch.</div>'}
+    </div>
+  `;
+}
+
+async function showIteration(num) {
+  const container = document.getElementById('batches');
+  const logText = await fetchText(`looplog/looplog-${num}.md`);
+
+  container.innerHTML = `
+    <button class="back-btn" onclick="history.back(); location.reload();">← Back</button>
+    <h2>Iteration ${num}</h2>
+    <div class="detail-view">
+      <pre>${logText ? escapeHtml(logText) : 'No log file found for this iteration.'}</pre>
+    </div>
+  `;
+}
+
+function renderTieoffs(tieoffs, planText) {
+  const container = document.getElementById('tieoffs');
+
+  if (tieoffs.length === 0) {
+    container.innerHTML = '<div class="empty-state">No tie-offs yet. Tasks that fail 3 consecutive times are abandoned and shown here.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <h2>Abandoned Tasks (${tieoffs.length})</h2>
+    <p style="color: var(--text-dim); margin-bottom: 16px; font-size: 14px;">
+      These tasks failed 3 consecutive iterations and were tied off. Review to decide: rework, rethink, or drop.
+    </p>
+    ${tieoffs.map(t => `
+      <div class="tieoff-card">
+        <div class="tieoff-task">${escapeHtml(t.task)}</div>
+        <div class="tieoff-reason">${escapeHtml(t.reason)}</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderMarkdown(elementId, text, title) {
+  const container = document.getElementById(elementId);
+  if (!text) {
+    container.innerHTML = `<div class="empty-state">${title} not found.</div>`;
+    return;
+  }
+  container.innerHTML = `
+    <h2>${title}</h2>
+    <div class="md-content">
+      <pre>${escapeHtml(text)}</pre>
+    </div>
+  `;
+}
+
+// ── Tab switching ──
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ── Init ──
+
+async function init() {
+  const [looplogText, planText, ideasText, claudeText] = await Promise.all([
+    fetchText('looplog.md'),
+    fetchText('implementation-plan.md'),
+    fetchText('IDEAS.md'),
+    fetchText('CLAUDE.md')
+  ]);
+
+  // Try to extract project name from CLAUDE.md
+  if (claudeText) {
+    const nameMatch = claudeText.match(/### Overview\s*\n<!--.*?-->\s*\n(.+)/);
+    if (nameMatch) {
+      document.getElementById('project-name').textContent = nameMatch[1].trim();
+    }
+  }
+
+  if (!looplogText || looplogText.trim().split('\n').length <= 4) {
+    document.getElementById('project-name').textContent = 'No loop data yet';
+    document.getElementById('stats').innerHTML = '';
+    document.getElementById('batches').innerHTML =
+      '<div class="empty-state">No batches yet. Run <code>./loop.sh</code> to get started.</div>';
+  } else {
+    const batches = parseLooplog(looplogText);
+    window._batches = batches;
+    renderStats(batches);
+    renderBatches(batches);
+  }
+
+  const tieoffs = parseTieoffs(planText);
+  renderTieoffs(tieoffs, planText);
+  renderMarkdown('plan', planText, 'Implementation Plan');
+  renderMarkdown('ideas', ideasText, 'Ideas');
+}
+
+init();
+</script>
+</body>
+</html>
