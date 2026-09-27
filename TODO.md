@@ -13,8 +13,10 @@ The build steps come from `DESIGN.md`. Check items off as they land.
   - [x] Roofs on every building: a couple of pitched styles (gable, hip) and
         flat styles (parapet, rooftop units); downtown mostly flat
   - [x] Trees everywhere (instanced, from land cover)
-  - [ ] Denser, fuller woods near the drone (with distance tiles)
-  - [ ] Distance tiles: near/mid/far detail (when frame rate needs it)
+  - [x] Denser, fuller woods near the drone (with distance tiles)
+  - [x] Distance tiles for trees: 200 m tiles; the 3×3 around the drone get
+        full-detail, denser trees
+  - [ ] Distance tiles for buildings (window/door detail up close), if wanted
   - [ ] Landmarks: the important cemetery (see `DESIGN.md`), downtown
 - [ ] 5. Zombie crowds and the attack scene
 

@@ -3,12 +3,17 @@
 // mask canvas says where trees may grow; roads, buildings and water block it.
 import { WORLD, DOWNTOWN, toWorld } from './geo.js';
 import { outerRings } from './data.js';
-import { plantTrees } from './trees.js';
+import * as THREE from 'three';
+import { plantTrees, showTree, flushTrees, removeTrees } from './trees.js';
 
 const MPP = 5; // mask meters per pixel
 const YARD = 90; // the farmyard plants its own trees inside this radius
 // Meters² of ground per tree, by mask channel.
 const PER_TREE = { forest: 120, woods: 480, hedge: 60 };
+// Denser planting in the tiles around the drone.
+const PER_TREE_NEAR = { forest: 45, woods: 150, hedge: 25 };
+const TILE = 200; // meters
+const NEAR = 1; // tiles each way from the drone's tile that get full detail
 
 // Kind, height range (m), relative odds. Mixed hardwoods, some conifers.
 const WOODS = [['broadleaf', 8, 18, 4], ['oak', 10, 20, 3], ['spruce', 9, 20, 1.5],
@@ -76,29 +81,52 @@ function chooser(mix, r) {
   };
 }
 
-// `thin` scales tree counts down (phones get fewer).
+// Mask pixel classes.
+const NONE = 0, WOODS_PX = 1, FOREST_PX = 2, HEDGE_PX = 3, BLOCKED = 4;
+
+function classify({ px, w, h }) {
+  const cls = new Uint8Array(w * h);
+  for (let k = 0; k < cls.length; k++) {
+    const red = px[k * 4], green = px[k * 4 + 1];
+    cls[k] = px[k * 4 + 2] ? BLOCKED : red > 200 ? FOREST_PX : red > 64 ? WOODS_PX : green > 64 ? HEDGE_PX : NONE;
+  }
+  return cls;
+}
+
+// `thin` scales tree counts down (phones get fewer). Returns the far trees
+// as one group, plus a near group that update() keeps filled with full-detail,
+// denser trees in the tiles around a point (the drone).
 export function buildForest(data, terrain, thin = 1) {
-  const { px, w, h } = drawMask(data);
+  const mask = drawMask(data), { w, h } = mask;
+  const cls = classify(mask);
   const r = rand(4242);
   const woods = chooser(WOODS, r), hedge = chooser(HEDGE, r), yards = chooser(YARDS, r);
   const cell = MPP * MPP;
-  const trees = [];
-  const add = (t, x, z) => { t.x = x; t.z = z; t.y = terrain.surfaceAt(x, z) - 0.3; trees.push(t); };
-  const blocked = (x, z) => {
-    const i = Math.floor((z - WORLD.minZ) / MPP) * w + Math.floor((x - WORLD.minX) / MPP);
-    return !(i >= 0 && i < w * h) || px[i * 4 + 2] > 0;
+  const tilesX = Math.ceil(WORLD.width / TILE), tilesZ = Math.ceil(WORLD.depth / TILE);
+  const tileOf = (x, z) => Math.floor((z - WORLD.minZ) / TILE) * tilesX + Math.floor((x - WORLD.minX) / TILE);
+  const baseByTile = new Map();
+  const place = (t, x, z, list) => {
+    t.x = x; t.z = z; t.y = terrain.surfaceAt(x, z) - 0.3;
+    list.push(t);
+    return t;
   };
+  const addBase = (t, x, z) => {
+    const k = tileOf(x, z);
+    if (!baseByTile.has(k)) baseByTile.set(k, []);
+    place(t, x, z, baseByTile.get(k));
+  };
+  const clsAt = (x, z) => {
+    const i = Math.floor((x - WORLD.minX) / MPP), j = Math.floor((z - WORLD.minZ) / MPP);
+    return i >= 0 && j >= 0 && i < w && j < h ? cls[j * w + i] : BLOCKED;
+  };
+  const odds = (c, per) => (c === FOREST_PX ? cell / per.forest : c === WOODS_PX ? cell / per.woods
+    : c === HEDGE_PX ? cell / per.hedge : 0);
 
   for (let j = 0; j < h; j++) {
     for (let i = 0; i < w; i++) {
-      const k = (j * w + i) * 4;
-      if (px[k + 2]) continue;
-      const red = px[k], green = px[k + 1];
-      const p = red > 200 ? cell / PER_TREE.forest : red > 64 ? cell / PER_TREE.woods
-        : green > 64 ? cell / PER_TREE.hedge : 0;
+      const c = cls[j * w + i], p = odds(c, PER_TREE);
       if (!p || r() > p * thin) continue;
-      const make = red > 64 ? woods : hedge;
-      add(make(), WORLD.minX + (i + r()) * MPP, WORLD.minZ + (j + r()) * MPP);
+      addBase((c === HEDGE_PX ? hedge : woods)(), WORLD.minX + (i + r()) * MPP, WORLD.minZ + (j + r()) * MPP);
     }
   }
 
@@ -111,8 +139,53 @@ export function buildForest(data, terrain, thin = 1) {
     for (let n = 1 + Math.floor(r() * 2); n > 0; n--) {
       const a = r() * Math.PI * 2, d = 10 + r() * 8;
       const x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
-      if (!blocked(x, z)) add(yards(), x, z);
+      if (clsAt(x, z) !== BLOCKED) addBase(yards(), x, z);
     }
   }
-  return { mesh: plantTrees(trees, true), count: trees.length };
+
+  const base = [...baseByTile.values()].flat();
+  const far = plantTrees(base, true, true);
+
+  // Extra trees that only exist up close, made the same way every time.
+  const extras = new Map();
+  function extrasFor(k) {
+    if (extras.has(k)) return extras.get(k);
+    const list = [], tr = rand(k * 7919 + 17), tw = chooser(WOODS, tr), th = chooser(HEDGE, tr);
+    const x0 = WORLD.minX + (k % tilesX) * TILE, z0 = WORLD.minZ + Math.floor(k / tilesX) * TILE;
+    for (let z = z0; z < z0 + TILE; z += MPP) {
+      for (let x = x0; x < x0 + TILE; x += MPP) {
+        const c = clsAt(x, z), p = odds(c, PER_TREE_NEAR) - odds(c, PER_TREE);
+        if (p > 0 && tr() < p * thin) place((c === HEDGE_PX ? th : tw)(), x + tr() * MPP, z + tr() * MPP, list);
+      }
+    }
+    extras.set(k, list);
+    return list;
+  }
+
+  const group = new THREE.Group();
+  group.add(far);
+  let nearTiles = new Set(), near = null, current = -1;
+
+  // Swaps detail around (x, z) when it moves into a new tile.
+  function update(x, z) {
+    const k = tileOf(x, z);
+    if (k === current) return;
+    current = k;
+    const tx = k % tilesX, tz = Math.floor(k / tilesX), next = new Set();
+    for (let dz = -NEAR; dz <= NEAR; dz++) {
+      for (let dx = -NEAR; dx <= NEAR; dx++) {
+        const ix = tx + dx, iz = tz + dz;
+        if (ix >= 0 && iz >= 0 && ix < tilesX && iz < tilesZ) next.add(iz * tilesX + ix);
+      }
+    }
+    for (const t of nearTiles) if (!next.has(t)) (baseByTile.get(t) ?? []).forEach((tree) => showTree(tree, true));
+    for (const t of next) if (!nearTiles.has(t)) (baseByTile.get(t) ?? []).forEach((tree) => showTree(tree, false));
+    flushTrees(far);
+    nearTiles = next;
+    if (near) removeTrees(near);
+    near = plantTrees([...next].flatMap((t) => [...(baseByTile.get(t) ?? []), ...extrasFor(t)]));
+    group.add(near);
+  }
+
+  return { group, update, count: base.length };
 }

@@ -47,7 +47,8 @@ async function init() {
   scene.add(buildBuildings(data.buildings, terrain));
   scene.add(buildHouse(terrain));
   scene.add(buildYard(terrain, data.roads, renderer));
-  scene.add(buildForest(data, terrain, small ? 0.5 : 1).mesh);
+  const forest = buildForest(data, terrain, small ? 0.5 : 1);
+  scene.add(forest.group);
 
   const drone = createDrone(terrain, reducedMotion);
   scene.add(drone.model);
@@ -76,6 +77,7 @@ async function init() {
     last = now;
     const input = map.isOpen ? { fwd: 0, strafe: 0, climb: 0, yaw: 0, tilt: 0 } : controls.read();
     drone.update(dt, input);
+    forest.update(drone.state.pos.x, drone.state.pos.z);
     if (map.isOpen) {
       map.draw();
     } else {
@@ -97,6 +99,7 @@ async function init() {
     requestAnimationFrame(frame);
   };
   // Draw one frame behind the title so the world is ready.
+  forest.update(drone.state.pos.x, drone.state.pos.z);
   rig.update(0, drone, controls.read());
   renderer.render(scene, camera);
 }

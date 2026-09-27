@@ -61,29 +61,56 @@ function bare(lo) {
 
 const KINDS = { spruce, pine, broadleaf, oak, poplar, bare };
 
+const shapes = {};
+const shapeOf = (kind, lo) => (shapes[kind + lo] ??= KINDS[kind](lo));
+const material = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
+const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
+const q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), m = new THREE.Matrix4();
+const v = new THREE.Vector3(), s = new THREE.Vector3();
+
+function treeMatrix(t) {
+  q.setFromAxisAngle(up, t.yaw);
+  const w = t.h * (t.spread ?? 1);
+  return m.compose(v.set(t.x, t.y, t.z), q, s.set(w, t.h, w));
+}
+
 // trees: [{ kind, x, y, z, h, yaw, spread? }]. Returns a group of instanced
 // meshes. `lo` uses fewer triangles, for trees planted by the thousand.
-export function plantTrees(trees, lo = false) {
+// With `track`, each tree remembers its slot so it can be hidden later.
+export function plantTrees(trees, lo = false, track = false) {
   const group = new THREE.Group();
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
   const tint = new THREE.Color();
-  for (const [kind, make] of Object.entries(KINDS)) {
+  for (const kind of Object.keys(KINDS)) {
     const list = trees.filter((t) => t.kind === kind);
     if (!list.length) continue;
-    const shape = make(lo);
-    [shape.foliage, shape.trunk].forEach((geo, part) => {
-      const mat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
-      const mesh = new THREE.InstancedMesh(geo, mat, list.length);
+    const shape = shapeOf(kind, lo);
+    const meshes = [shape.foliage, shape.trunk].map((geo, part) => {
+      const mesh = new THREE.InstancedMesh(geo, material, list.length);
       list.forEach((t, i) => {
-        q.setFromAxisAngle(up, t.yaw);
-        const w = t.h * (t.spread ?? 1);
-        m.compose(new THREE.Vector3(t.x, t.y, t.z), q, new THREE.Vector3(w, t.h, w));
-        mesh.setMatrixAt(i, m);
-        tint.setHex(shape.colors[part]).multiplyScalar(0.85 + ((i * 0.618) % 1) * 0.3);
-        mesh.setColorAt(i, tint);
+        mesh.setMatrixAt(i, treeMatrix(t));
+        const shade = 0.85 + (((t.x * 0.37 + t.z * 0.61) % 1 + 1) % 1) * 0.3;
+        mesh.setColorAt(i, tint.setHex(shape.colors[part]).multiplyScalar(shade));
       });
       group.add(mesh);
+      return mesh;
     });
+    if (track) list.forEach((t, i) => { t.slot = { meshes, i }; });
   }
   return group;
+}
+
+// Hides or shows tracked trees; call flushTrees on the group afterwards.
+export function showTree(t, visible) {
+  const mat = visible ? treeMatrix(t) : HIDDEN;
+  for (const mesh of t.slot.meshes) mesh.setMatrixAt(t.slot.i, mat);
+}
+
+export function flushTrees(group) {
+  for (const mesh of group.children) mesh.instanceMatrix.needsUpdate = true;
+}
+
+// Frees a group's instance buffers (the shapes and material are shared).
+export function removeTrees(group) {
+  group.removeFromParent();
+  for (const mesh of group.children) mesh.dispose();
 }
