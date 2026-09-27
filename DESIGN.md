@@ -67,6 +67,18 @@ a gamble), told as plainly and realistically as we can.
    house, work the garden, watch the drone feed, a supply run, or go talk to
    survivors. Runs and recruiting can only target places that have a photo;
    a fresh photo (today or yesterday) makes the run safer.
+   The House screen opens on a pencil cutaway of the farmhouse. Its rooms
+   follow the outside of the model: attic under the gable (the night
+   lookout, with the dead visible in the tree line); upstairs the front
+   bedroom (radio and drone charger, window onto the porch roof), the back
+   bedrooms (everyone sleeps up here; the hurt stay in bed) and the
+   bathroom (medicine cabinet, the tub filled with water); downstairs the
+   kitchen in the rear wing (pantry shelves that fill and overflow), the
+   dining room (the planning table: jobs, prints, journal) and the living
+   room (the stockpile: gas cans, lumber, overflow food; furniture against
+   the windows); and the cellar (the old owner's reloading press with a
+   finite stock of powder and primers, ammo cans). Each room is drawn from
+   the real numbers and lets you send someone to work there.
 4. **End the day.** Runs play out (distance, gas for the truck, the dead
    near the place vs. fighting skill and ammo, what's left inside, what
    they can carry), people eat and drink, the house draws the dead closer,

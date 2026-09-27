@@ -6,7 +6,7 @@ import { latestPhoto } from './game.js';
 
 export const TASKS = {
   rest: 'Rest', guard: 'Keep watch at night', fortify: 'Board up the house', garden: 'Work the garden',
-  watch: 'Watch the drone feed', run: 'Supply run', recruit: 'Go talk to them',
+  reload: 'Load shells at the press', watch: 'Watch the drone feed', run: 'Supply run', recruit: 'Go talk to them',
 };
 export const AWAY = new Set(['run', 'recruit']);
 const WELL = 4; // water a day from the hand pump
@@ -144,6 +144,14 @@ export function endDay(game, sites, roads) {
     boarded.push(p);
   }
   if (boarded.length) lines.push(`${firstNames(boarded)} nailed up more boards.`);
+  for (const p of doing('reload')) {
+    // The old owner's powder and primers in the cellar: once they're gone, they're gone.
+    const made = Math.min(game.press ?? 0, 4 + p.skills.build * 2);
+    game.press = (game.press ?? 0) - made;
+    game.res.ammo += made;
+    lines.push(made ? `${p.first} spent the day at the press in the cellar and loaded ${made} rounds.`
+      : `${p.first} went down to the press, but the powder's all gone.`);
+  }
   for (const p of doing('rest')) if (p.hurt && Math.random() < 0.4) p.hurt--;
   const medic = bestAt(home.length ? home : alive(), 'med');
   for (const p of alive()) {

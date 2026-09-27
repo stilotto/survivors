@@ -96,7 +96,7 @@ button.link { background: none; border: 0; color: var(--muted); text-decoration:
 #table header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
   padding: max(10px, env(safe-area-inset-top)) 16px 6px; }
 #table h2 { font-family: 'Special Elite', serif; margin: 0; font-size: 26px; }
-#t-supplies { margin: 2px 0 0; font-family: 'Special Elite', serif; font-size: 13px; color: #4a4336; }
+#t-where { margin: 2px 0 0; font-family: 'Special Elite', serif; font-size: 13px; color: #4a4336; }
 #table button { color: #2a2620; background: #efe8d6; border-color: rgba(0,0,0,0.25); touch-action: manipulation; }
 #table button.active { background: #2a2620; color: #efe8d6; }
 #table nav { display: flex; gap: 6px; padding: 4px 16px 8px; }
@@ -123,3 +123,25 @@ button.link { background: none; border: 0; color: var(--muted); text-decoration:
 .empty { color: #5a5244; }
 
 @media (prefers-reduced-motion: reduce) { #subs { transition: none; } #flash.go { animation: none; } }
+
+/* The cutaway and the rooms. */
+.cutaway { display: block; width: 100%; max-width: 560px; max-height: calc(100dvh - 170px); margin: 4px auto 0; }
+.cutaway .roof { fill: none; stroke: #2a2620; stroke-width: 2.5; stroke-linejoin: round; }
+.cutaway .chimney { fill: #8a5a4a; stroke: #2a2620; stroke-width: 1.5; }
+.cutaway .porch { fill: none; stroke: #2a2620; stroke-width: 2; }
+.cutaway .grade { stroke: #4a5a3a; stroke-width: 3; }
+.cutaway .earth { fill: #b8ab90; }
+.cutaway .room path, .cutaway .room rect { fill: #efe8d6; stroke: #2a2620; stroke-width: 2; cursor: pointer; }
+.cutaway .room:hover path, .cutaway .room:hover rect, .cutaway .room:focus path, .cutaway .room:focus rect { fill: #fff8e0; }
+.cutaway .room:focus { outline: none; }
+.cutaway .room:focus-visible path, .cutaway .room:focus-visible rect { stroke: #8a2a1c; stroke-width: 3; }
+.cutaway text { text-anchor: middle; pointer-events: none; fill: #2a2620; }
+.cutaway .rname { font: 600 17px Caveat, 'Comic Sans MS', cursive; }
+.cutaway .rstat { font: 11px Inter, sans-serif; fill: #5a5244; }
+.room-art { display: block; width: 100%; max-width: 720px; aspect-ratio: 16 / 9; margin: 0 auto 10px; border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+.room-text { max-width: 720px; margin: 0 auto; }
+.room-text > p { margin: 0 0 8px; }
+.staff { color: #4a4336; }
+.room-text > select { font: inherit; margin: 0 0 12px; padding: 6px; background: #fff; color: #2a2620;
+  border: 1px solid rgba(0,0,0,0.3); border-radius: 4px; max-width: 100%; }

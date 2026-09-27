@@ -1,25 +1,31 @@
-// The kitchen table: who does what tomorrow, the drone prints pinned up,
-// and the journal. Plain paper and pencil, no game badges.
+// Inside the farmhouse: a cutaway of the house to pick a room, and each
+// room drawn as it is today (full shelves or bare ones, boards on the
+// windows, the press in the cellar). The dining room is where the group
+// plans: jobs, the drone prints, the journal.
 import { SKILLS, SKILL_NAMES, HURT } from './people.js';
 import { TASKS, AWAY } from './dayend.js';
 import { milesFromHome } from './sites.js';
-
-const GOOD_NAMES = { food: 'Food', water: 'Water', fuel: 'Gas', meds: 'Medicine', ammo: 'Ammo', parts: 'Lumber' };
+import { roomById, cutaway } from './rooms.js';
+import { canvasFor } from './sketch.js';
 
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const fortWord = (f) => (f < 1 ? 'Windows wide open' : f < 3 ? 'A few boards up' : f < 6 ? 'Windows boarded' : 'House well boarded');
 
-export function createTable(el, { getGame, sites, onEnd, onClose, onRestart }) {
+export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onRestart }) {
   const body = el.querySelector('#t-body');
+  const tabs = el.querySelector('#t-tabs');
   const siteById = new Map(sites.map((s) => [s.id, s]));
-  let tab = 'people';
+  let where = 'house', tab = 'people';
 
   for (const b of el.querySelectorAll('[data-tab]')) b.onclick = () => { tab = b.dataset.tab; render(); };
-  el.querySelector('#t-close').onclick = () => { el.hidden = true; onClose(); };
+  el.querySelector('#t-close').onclick = () => {
+    if (where !== 'house') { where = 'house'; render(); return; }
+    el.hidden = true;
+    onClose();
+  };
   el.querySelector('#t-end').onclick = () => {
     if (getGame().over) { onRestart(); return; }
     onEnd();
-    tab = 'journal';
+    where = 'dining'; tab = 'journal';
     render();
   };
 
@@ -70,17 +76,57 @@ export function createTable(el, { getGame, sites, onEnd, onClose, onRestart }) {
       <h3>Day ${e.day}, ${e.when}</h3>${e.lines.map((l) => `<p>${esc(l)}</p>`).join('')}</section>`).join('');
   }
 
+  // Who works in this room tomorrow, and a way to send someone else.
+  function staff(game, room) {
+    const here = game.crew.filter((p) => (game.orders[p.id]?.task ?? 'rest') === room.job);
+    const others = game.crew.filter((p) => !here.includes(p) && !(AWAY.has(room.job) && p.hurt >= 2));
+    return `<p class="staff"><b>${TASKS[room.job]}:</b> ${here.length ? esc(here.map((p) => p.first).join(', ')) : 'nobody'}</p>
+      ${others.length ? `<select data-assign="${room.job}" aria-label="Send someone here"><option value="">Send someone here…</option>
+      ${others.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>` : ''}`;
+  }
+
+  function roster(game) {
+    return game.crew.map((p) => {
+      const state = [HURT[p.hurt], p.hungry ? 'hungry' : ''].filter(Boolean).join(', ');
+      return `<article class="person"><h3>${esc(p.name)}${state ? ` <span class="state">${state}</span>` : ''}</h3>
+        <p class="past">${esc(p.first)} ${esc(p.past)}.</p>
+        <p class="skills">${SKILLS.map((k) => `${SKILL_NAMES[k]} ${p.skills[k]}`).join(' · ')}</p></article>`;
+    }).join('');
+  }
+
   function render() {
     const game = getGame();
-    el.querySelector('#t-day').textContent = `Day ${game.day}`;
-    el.querySelector('#t-supplies').textContent =
-      `${Object.entries(GOOD_NAMES).map(([k, n]) => `${n} ${game.res[k]}`).join(' · ')} · ${fortWord(game.fort)}`;
+    const room = roomById(where);
+    el.querySelector('#t-day').textContent = room ? room.name : `Day ${game.day}`;
+    el.querySelector('#t-where').textContent = room ? `Day ${game.day}` : 'The farmhouse. Tap a room.';
+    el.querySelector('#t-close').textContent = room ? '← House' : 'Back to the drone';
+    tabs.hidden = !room?.plans;
     for (const b of el.querySelectorAll('[data-tab]')) b.classList.toggle('active', b.dataset.tab === tab);
-    body.innerHTML = { people, photos, journal }[tab](game);
+    el.querySelector('#t-end').textContent = game.over ? 'Start over' : 'End the day';
+    body.innerHTML = '';
     body.scrollTop = 0;
-    const end = el.querySelector('#t-end');
-    end.textContent = game.over ? 'Start over' : 'End the day';
 
+    if (!room) {
+      body.innerHTML = cutaway(game, getDrone());
+      for (const g of body.querySelectorAll('[data-room]')) {
+        const go = () => { where = g.dataset.room; render(); };
+        g.addEventListener('click', go);
+        g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      }
+      return;
+    }
+
+    room.draw(canvasFor(body), game, getDrone());
+    const text = document.createElement('div');
+    text.className = 'room-text';
+    text.innerHTML = `<p>${esc(room.text)}</p>${room.job ? staff(game, room) : ''}`
+      + (room.id === 'bedrooms' ? roster(game) : '')
+      + (room.plans ? { people, photos, journal }[tab](game) : '');
+    body.append(text);
+
+    for (const s of body.querySelectorAll('[data-assign]')) {
+      s.onchange = () => { if (s.value) { game.orders[s.value] = { task: s.dataset.assign }; render(); } };
+    }
     for (const s of body.querySelectorAll('[data-task]')) {
       s.onchange = () => {
         const task = s.value;
@@ -95,7 +141,11 @@ export function createTable(el, { getGame, sites, onEnd, onClose, onRestart }) {
   }
 
   return {
-    open(which) { if (which) tab = which; render(); el.hidden = false; },
+    open(which) {
+      if (which === 'journal') { where = 'dining'; tab = 'journal'; } else where = 'house';
+      render();
+      el.hidden = false;
+    },
     get isOpen() { return !el.hidden; },
   };
 }

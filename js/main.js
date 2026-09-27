@@ -19,7 +19,7 @@ import { createSignals } from './signals.js';
 import { createCamera } from './photo.js';
 import { describe, createWatcher } from './spotter.js';
 import { createSubs } from './subs.js';
-import { createTable } from './table.js';
+import { createInside } from './inside.js';
 import { newGame, loadGame, saveGame, hasSave, clearSave, addPhoto } from './game.js';
 import { endDay } from './dayend.js';
 import { bestAt } from './people.js';
@@ -112,8 +112,8 @@ async function init() {
     saveGame(game, sites);
   }
 
-  const table = createTable($('#table'), {
-    getGame: () => game, sites,
+  const table = createInside($('#table'), {
+    getGame: () => game, getDrone: () => drone, sites,
     onClose: () => saveGame(game, sites),
     onEnd: () => {
       endDay(game, sites, data.roads);

@@ -14,6 +14,7 @@ export function newGame(sites) {
     crew: startingCrew(seed),
     orders: {}, // person id -> { task, site }
     fort: 2, // boards on the windows, braces on the doors
+    press: 60, // rounds' worth of powder and primers by the press in the cellar
     threat: 1, // how many of the dead the house has drawn in
     photos: [],
     journal: [{ day: 1, when: 'morning', lines: [
@@ -30,6 +31,7 @@ export function loadGame(sites) {
     if (!saved || !saved.sites) return null;
     applySiteState(sites, saved.sites);
     delete saved.sites;
+    saved.press ??= 60;
     return saved;
   } catch {
     return null;
