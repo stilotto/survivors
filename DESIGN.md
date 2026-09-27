@@ -1,4 +1,4 @@
-# Survivor: Design
+# Survivors: Design
 
 A browser game (no build step, ES modules, like the other stilotto games). It is
 set in and around Evans City, PA, where the 1968 *Night of the Living Dead* was

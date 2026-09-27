@@ -1,4 +1,4 @@
-# Survivor: project directory
+# Survivors: project directory
 
 ## >>> ALWAYS PUSH TO `main` <<<
 

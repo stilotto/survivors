@@ -17,4 +17,4 @@ The build steps come from `DESIGN.md`. Check items off as they land.
 
 ## Housekeeping
 - [ ] Turn on GitHub Pages (Settings → Pages → `main`, root)
-- [ ] Add a Survivor card to the stilotto.github.io index page
+- [ ] Add a Survivors card to the stilotto.github.io index page
