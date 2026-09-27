@@ -2,7 +2,7 @@
 // Downtown and commercial buildings get flat roofs; houses, barns and sheds
 // get pitched ones. See roofs.js for the styles.
 import * as THREE from 'three';
-import { toWorld } from './geo.js';
+import { toWorld, DOWNTOWN } from './geo.js';
 import { outerRings } from './data.js';
 import { orientedBox, gable, hip, parapet, rooftopUnits } from './roofs.js';
 
@@ -10,8 +10,6 @@ const DEFAULT_HEIGHT = { house: 7, residential: 7, semidetached_house: 7, garage
   farm: 8, barn: 9, greenhouse: 3.5, school: 9, commercial: 8, retail: 6, industrial: 9 };
 const FLAT_CLASS = new Set(['commercial', 'retail', 'industrial', 'school', 'post_office', 'service', 'roof']);
 const BARN_CLASS = new Set(['farm', 'barn']);
-// Evans City's Main St, by the borough office and library.
-const DOWNTOWN = { at: toWorld(-80.0615, 40.7687), radius: 350 };
 
 const PITCHED_ROOF = [0x4a4a48, 0x5a4a3e, 0x3a3b3d, 0x55504a, 0x4f5a52];
 const BARN_ROOF = [0x6b3b32, 0x5f6260, 0x4f5a52];

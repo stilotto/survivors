@@ -6,6 +6,7 @@ import { paintGround, groundTexture } from './ground.js';
 import { buildBuildings } from './buildings.js';
 import { buildHouse, nearHouse } from './house.js';
 import { buildYard } from './yard.js';
+import { buildForest } from './forest.js';
 import { createDrone } from './drone.js';
 import { createControls } from './controls.js';
 import { createCameraRig } from './camera.js';
@@ -46,6 +47,7 @@ async function init() {
   scene.add(buildBuildings(data.buildings, terrain));
   scene.add(buildHouse(terrain));
   scene.add(buildYard(terrain, data.roads, renderer));
+  scene.add(buildForest(data, terrain, small ? 0.5 : 1).mesh);
 
   const drone = createDrone(terrain, reducedMotion);
   scene.add(drone.model);

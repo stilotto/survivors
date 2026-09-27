@@ -12,7 +12,8 @@ The build steps come from `DESIGN.md`. Check items off as they land.
   - [x] Yard: shed, gas pump, trees, driveway, grass
   - [x] Roofs on every building: a couple of pitched styles (gable, hip) and
         flat styles (parapet, rooftop units); downtown mostly flat
-  - [ ] Trees everywhere (instanced, from land cover)
+  - [x] Trees everywhere (instanced, from land cover)
+  - [ ] Denser, fuller woods near the drone (with distance tiles)
   - [ ] Distance tiles: near/mid/far detail (when frame rate needs it)
   - [ ] Landmarks: the important cemetery (see `DESIGN.md`), downtown
 - [ ] 5. Zombie crowds and the attack scene

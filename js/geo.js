@@ -21,3 +21,6 @@ export const WORLD = { minX, maxX, minZ, maxZ, width: maxX - minX, depth: maxZ -
 
 // Where the drone lands and recharges, in the yard south of the house.
 export const HOME = { x: 0, z: 14 };
+
+// Evans City's Main St, by the borough office and library.
+export const DOWNTOWN = { at: toWorld(-80.0615, 40.7687), radius: 350 };
