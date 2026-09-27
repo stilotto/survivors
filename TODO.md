@@ -6,6 +6,9 @@ The build steps come from `DESIGN.md`. Check items off as they land.
 - [x] 1. Terrain, ground texture, farmhouse box, drone (manual + GPS autopilot), tap-to-fly map
 - [x] 2. Roads and building footprints from map data (painted roads, extruded buildings)
 - [ ] 3. Window view from the house; smoke, aircraft and zombie events
+  - [x] Look out any room's windows at the live world (boards, drag to look)
+  - [x] Smoke plumes from a few fires a day; jets and helicopters passing over
+  - [ ] The dead catching and eating a victim, now and then
 - [ ] 4. Better art: imagery or textures, trees, fields, a detailed farmhouse
   (layered plan in `DESIGN.md`, "Adding detail")
   - [x] Farmhouse modeled on the film-era house

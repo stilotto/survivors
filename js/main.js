@@ -20,6 +20,8 @@ import { createCamera } from './photo.js';
 import { describe, createWatcher } from './spotter.js';
 import { createSubs } from './subs.js';
 import { createInside } from './inside.js';
+import { createLookout } from './lookout.js';
+import { createAmbient } from './ambient.js';
 import { newGame, loadGame, saveGame, hasSave, clearSave, addPhoto } from './game.js';
 import { endDay } from './dayend.js';
 import { bestAt } from './people.js';
@@ -71,7 +73,13 @@ async function init() {
   scene.add(walkers.mesh);
   const signals = createSignals(terrain);
   scene.add(signals.group);
-  const populate = () => { walkers.populate(sites, game.threat, game.day, game.seed); signals.populate(sites); };
+  const ambient = createAmbient(terrain, reducedMotion);
+  scene.add(ambient.group);
+  const populate = () => {
+    walkers.populate(sites, game.threat, game.day, game.seed);
+    signals.populate(sites);
+    ambient.populate(sites, game.day, game.seed);
+  };
   populate();
 
   const drone = createDrone(terrain, reducedMotion);
@@ -124,6 +132,28 @@ async function init() {
       saveGame(game, sites);
     },
     onRestart: () => { clearSave(); location.reload(); },
+    onLook: (room, i) => {
+      $('#hud').hidden = true;
+      // Whoever works in the room is at the window; else the lookout.
+      const p = game.crew.find((c) => room.job && (game.orders[c.id]?.task ?? 'rest') === room.job);
+      lookout.open(room, i, game, p ? p.first : spotter());
+    },
+  });
+
+  const lookout = createLookout($('#lookout'), {
+    terrain, walkers, ambient,
+    onClose: (room) => { $('#hud').hidden = false; table.open(room); },
+  });
+  // Seen from the house: a stand-in "drone" at the window, which the dead ignore.
+  const atWindow = { state: { pos: { x: 0, y: 0, z: 0 }, mode: 'landed' }, groundBelow: () => -Infinity };
+  const AIRCRAFT = {
+    jet: (to, at) => `Jet going over, off to the ${at}. Headed ${to}. Military, I think.`,
+    helicopter: (to, at) => `Helicopter to the ${at}, headed ${to}. They're not stopping for anybody.`,
+  };
+  ambient.onSighting((kind, to, at) => {
+    const line = AIRCRAFT[kind](to, at);
+    if (lookout.isOpen) lookout.say(line);
+    else if (!table.isOpen) subs.say(spotter(), line);
   });
 
   const map = createMap($('#map'), groundCanvas, drone, () => {}, () => game.photos);
@@ -133,8 +163,8 @@ async function init() {
     view: () => { viewBtn.textContent = rig.toggle() === 'drone' ? 'View' : 'Cam'; },
     home: () => drone.goHome(),
     warp: () => drone.warp(),
-    photo: () => { if (!map.isOpen && !table.isOpen) takePhoto(); },
-    house: () => { if (!table.isOpen) { controls.clear(); if (map.isOpen) map.close(); table.open(); } },
+    photo: () => { if (!map.isOpen && !table.isOpen && !lookout.isOpen) takePhoto(); },
+    house: () => { if (!table.isOpen && !lookout.isOpen) { controls.clear(); if (map.isOpen) map.close(); table.open(); } },
   };
   const controls = createControls($('#hud'), actions);
   $('#btn-map').onclick = actions.map;
@@ -152,10 +182,19 @@ async function init() {
   function frame(now) {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
-    const input = map.isOpen || table.isOpen ? { fwd: 0, strafe: 0, climb: 0, yaw: 0, tilt: 0 } : controls.read();
+    const input = map.isOpen || table.isOpen || lookout.isOpen ? { fwd: 0, strafe: 0, climb: 0, yaw: 0, tilt: 0 } : controls.read();
     drone.update(dt, input);
     clock += dt;
-    if (table.isOpen) {
+    ambient.update(dt);
+    if (lookout.isOpen) {
+      const p = lookout.pos;
+      Object.assign(atWindow.state.pos, p);
+      forest.update(p.x, p.z);
+      walkers.update(dt, atWindow);
+      signals.update(dt, atWindow);
+      drone.model.visible = true;
+      lookout.render(renderer, scene);
+    } else if (table.isOpen) {
       // Nothing to draw behind the table.
     } else if (map.isOpen) {
       map.draw();

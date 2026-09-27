@@ -6,10 +6,11 @@
 //
 // A view is a preset name (see VIEWS) or name=x,y,z,lx,ly,lz (camera and
 // look-at point in world meters: x east, z south; y is height above the
-// ground at the look point). "game" screenshots the real game after launch.
+// ground at the look point). "game" screenshots the real game after launch;
+// "look:<room>[:n]" screenshots the game looking out that room's window.
 // Examples:
 //   node tools/preview.mjs /tmp/shots house air
-//   node tools/preview.mjs /tmp/shots barn=120,20,-40,100,5,-60 game
+//   node tools/preview.mjs /tmp/shots barn=120,20,-40,100,5,-60 game look:front
 import { createServer } from 'node:http';
 import { readFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -68,7 +69,7 @@ await page.route(/cdn\.jsdelivr\.net\/npm\/three@[^/]+\/(.*)/, (route) => {
 await page.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
 
 const list = names.length ? names : ['house', 'air'];
-const scene = list.filter((n) => n !== 'game');
+const scene = list.filter((n) => n !== 'game' && !n.startsWith('look:'));
 try {
   if (scene.length) {
     await page.goto(`${base}/tools/preview.html`);
@@ -89,6 +90,19 @@ try {
     await page.click('#launch');
     await page.waitForTimeout(2000);
     const file = join(outDir, 'game.png');
+    await page.screenshot({ path: file });
+    console.log(file);
+  }
+  for (const name of list.filter((n) => n.startsWith('look:'))) {
+    const [, room, n = 0] = name.split(':');
+    await page.goto(`${base}/index.html`);
+    await page.waitForFunction(() => !document.querySelector('#launch').disabled, null, { timeout: 120000 });
+    await page.click('#launch');
+    await page.click('#btn-house');
+    await page.click(`[data-room="${room}"]`);
+    await page.click(`[data-look="${n}"]`);
+    await page.waitForTimeout(1500);
+    const file = join(outDir, `look-${room}-${n}.png`);
     await page.screenshot({ path: file });
     console.log(file);
   }

@@ -7,10 +7,11 @@ import { TASKS, AWAY } from './dayend.js';
 import { milesFromHome } from './sites.js';
 import { roomById, cutaway } from './rooms.js';
 import { canvasFor } from './sketch.js';
+import { windowsFor } from './lookout.js';
 
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onRestart }) {
+export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onRestart, onLook }) {
   const body = el.querySelector('#t-body');
   const tabs = el.querySelector('#t-tabs');
   const siteById = new Map(sites.map((s) => [s.id, s]));
@@ -119,11 +120,17 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
     room.draw(canvasFor(body), game, getDrone());
     const text = document.createElement('div');
     text.className = 'room-text';
-    text.innerHTML = `<p>${esc(room.text)}</p>${room.job ? staff(game, room) : ''}`
+    const looks = windowsFor(room.id);
+    text.innerHTML = `<p>${esc(room.text)}</p>`
+      + (looks.length ? `<div class="looks">${looks.map((v, i) => `<button data-look="${i}">Look out: ${esc(v.name.toLowerCase())}</button>`).join('')}</div>` : '')
+      + (room.job ? staff(game, room) : '')
       + (room.id === 'bedrooms' ? roster(game) : '')
       + (room.plans ? { people, photos, journal }[tab](game) : '');
     body.append(text);
 
+    for (const b of body.querySelectorAll('[data-look]')) {
+      b.onclick = () => { el.hidden = true; onLook(room, +b.dataset.look); };
+    }
     for (const s of body.querySelectorAll('[data-assign]')) {
       s.onchange = () => { if (s.value) { game.orders[s.value] = { task: s.dataset.assign }; render(); } };
     }
@@ -142,7 +149,7 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
 
   return {
     open(which) {
-      if (which === 'journal') { where = 'dining'; tab = 'journal'; } else where = 'house';
+      if (which === 'journal') { where = 'dining'; tab = 'journal'; } else where = roomById(which) ? which : 'house';
       render();
       el.hidden = false;
     },

@@ -23,6 +23,7 @@ import { buildSites, placeSurvivors } from './js/sites.js';
 import { buildCars } from './js/cars.js';
 import { createWalkers } from './js/walkers.js';
 import { createSignals } from './js/signals.js';
+import { createAmbient } from './js/ambient.js';
 
 const r = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
 const scene = new THREE.Scene();
@@ -51,7 +52,12 @@ scene.add(walkers.mesh);
 const signals = createSignals(terrain);
 signals.populate(sites);
 scene.add(signals.group);
+const ambient = createAmbient(terrain, false);
+ambient.populate(sites, 1, 1);
+scene.add(ambient.group);
 window.sites = sites;
+window.ambient = ambient;
+window.plumes = ambient.plumes;
 
 const cam = new THREE.PerspectiveCamera(55, 1.5, 0.1, 20000);
 // Camera at (x, ground + y, z) looking at (lx, ground + ly, lz); heights are

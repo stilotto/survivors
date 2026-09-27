@@ -76,7 +76,7 @@ function yardTrees(terrain, lanes, keepClear) {
   const r = rand(11);
   const trees = [
     { kind: 'spruce', x: -13, z: -4, h: 17 }, { kind: 'spruce', x: -16, z: 5, h: 14 },
-    { kind: 'spruce', x: -10, z: -15, h: 15 }, { kind: 'spruce', x: 13, z: 3, h: 16 },
+    { kind: 'spruce', x: -10, z: -15, h: 15 }, { kind: 'spruce', x: 13, z: 8, h: 16 },
     { kind: 'oak', x: 22, z: 10, h: 13, spread: 1.1 }, { kind: 'spruce', x: 4, z: -22, h: 18 },
   ];
   // Mix of kinds, with typical height ranges (m) and relative odds.

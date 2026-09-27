@@ -145,3 +145,31 @@ button.link { background: none; border: 0; color: var(--muted); text-decoration:
 .staff { color: #4a4336; }
 .room-text > select { font: inherit; margin: 0 0 12px; padding: 6px; background: #fff; color: #2a2620;
   border: 1px solid rgba(0,0,0,0.3); border-radius: 4px; max-width: 100%; }
+.looks { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+
+/* Looking out a window: the live scene behind a sash, wall around it. */
+#lookout { position: fixed; inset: 0; touch-action: none; cursor: grab; }
+#lookout:active { cursor: grabbing; }
+.lo-frame { position: absolute; inset: calc(max(10px, env(safe-area-inset-top)) + 64px) 9% 64px;
+  border: 14px solid #e4ded0; outline: 3px solid #4a4236;
+  box-shadow: 0 0 0 200vmax #6e6454, inset 0 0 18px rgba(0,0,0,0.45); pointer-events: none; }
+.lo-sash { position: absolute; inset: 0;
+  background: linear-gradient(to right, transparent calc(50% - 4px), #e4ded0 calc(50% - 4px), #e4ded0 calc(50% + 4px), transparent calc(50% + 4px)),
+    linear-gradient(to bottom, transparent calc(50% - 7px), #e4ded0 calc(50% - 7px), #e4ded0 calc(50% + 7px), transparent calc(50% + 7px)); }
+.lo-boards { position: absolute; inset: 0; }
+.lo-board { position: absolute; left: -22px; right: -22px; height: 13%; min-height: 28px;
+  background: linear-gradient(#9a7a52, #7e6040); border: 1px solid rgba(0,0,0,0.35); box-shadow: 0 3px 6px rgba(0,0,0,0.4); }
+#lookout header { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 8px; padding: max(10px, env(safe-area-inset-top)) 12px 0; color: #efe8d6; }
+#lookout header > div { text-align: center; min-width: 0; }
+#lookout h2 { font-family: 'Special Elite', serif; margin: 0; font-size: 22px; font-weight: normal; }
+#lo-name { margin: 0; font-size: 13px; color: #d9d1bd; }
+#lookout button { color: #2a2620; background: #efe8d6; border-color: rgba(0,0,0,0.25); touch-action: manipulation; }
+#lo-say { position: absolute; left: 50%; bottom: 76px; transform: translateX(-50%); width: max-content; max-width: min(90vw, 560px);
+  margin: 0; padding: 6px 12px; border-radius: 6px; background: rgba(10, 10, 10, 0.72); text-align: center;
+  opacity: 0; transition: opacity 0.4s; pointer-events: none; }
+#lo-say.show { opacity: 1; }
+#lo-say .who { color: var(--accent); }
+.lo-hint { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0;
+  text-align: center; font-size: 13px; color: #d9d1bd; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #lo-say { transition: none; } }

@@ -31,6 +31,7 @@
       <summary>Controls</summary>
       <p><b>Keys:</b> W/S forward/back, A/D sideways, Q/E or ←/→ turn,
         R/F or ↑/↓ up/down, T/G camera tilt, P photo, M map, C view, H return home, B the house.</p>
+      <p><b>The house:</b> tap a room, then a window to look out. Drag to look around.</p>
       <p><b>Touch:</b> left pad climbs and turns, right pad moves.</p>
       <p><b>Map:</b> tap a spot, pick an altitude, and the drone flies there.
         Any stick input takes back control.</p>
@@ -90,6 +91,17 @@
     <button id="fly-here">Fly here</button>
   </div>
   <p class="map-hint" id="map-hint">Tap the map to pick a spot.</p>
+</section>
+
+<section id="lookout" hidden>
+  <div class="lo-frame"><div class="lo-sash"></div><div class="lo-boards"></div></div>
+  <header>
+    <button id="lo-back">← Room</button>
+    <div><h2 id="lo-room"></h2><p id="lo-name"></p></div>
+    <button id="lo-next" aria-label="Next window">Next ›</button>
+  </header>
+  <p id="lo-say" aria-live="polite"></p>
+  <p class="lo-hint">Drag to look around</p>
 </section>
 
 <section id="table" hidden>
