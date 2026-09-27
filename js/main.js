@@ -7,6 +7,7 @@ import { buildBuildings } from './buildings.js';
 import { buildHouse, nearHouse } from './house.js';
 import { buildYard } from './yard.js';
 import { buildForest } from './forest.js';
+import { buildCemetery } from './cemetery.js';
 import { createDrone } from './drone.js';
 import { createControls } from './controls.js';
 import { createCameraRig } from './camera.js';
@@ -60,6 +61,7 @@ async function init() {
   scene.add(buildBuildings(data.buildings, terrain));
   scene.add(buildHouse(terrain));
   scene.add(buildYard(terrain, data.roads, renderer));
+  scene.add(buildCemetery(data, terrain, small ? 0.6 : 1));
   const forest = buildForest(data, terrain, small ? 0.5 : 1);
   scene.add(forest.group);
 
