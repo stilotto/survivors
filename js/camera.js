@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 
 export function createCameraRig(camera) {
-  let mode = 'drone';
+  let mode = 'chase'; // start behind the drone so players see where they are
   let tilt = -0.35; // radians, gimbal pitch
   const chasePos = new THREE.Vector3();
 

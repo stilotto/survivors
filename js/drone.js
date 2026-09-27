@@ -8,13 +8,14 @@ const CRUISE = 18, MIN_AGL = 0.3, MAX_AGL = 400;
 const DRAIN = 100 / (12 * 60); // percent per second of flight: 12 minutes
 const CHARGE = 2;               // percent per second on the pad
 const WARP_LEFT = 4;            // seconds of flight a warp leaves
+const START_YAW = 70 * Math.PI / 180; // launch heading 290°: house on the right, buildings on the horizon
 
 export function createDrone(terrain, reducedMotion) {
   const model = buildModel();
   model.rotation.order = 'YXZ';
   const pos = new THREE.Vector3(HOME.x, terrain.heightAt(HOME.x, HOME.z) + MIN_AGL, HOME.z);
   const vel = new THREE.Vector3();
-  const state = { pos, vel, yaw: 0, battery: 100, mode: 'landed', target: null, landing: false, rotor: 0 };
+  const state = { pos, vel, yaw: START_YAW, battery: 100, mode: 'landed', target: null, landing: false, rotor: 0 };
   const houseGround = terrain.heightAt(0, 0);
   const listeners = [];
   const say = (msg) => listeners.forEach((fn) => fn(msg));
