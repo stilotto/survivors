@@ -14,6 +14,8 @@ The build steps come from `DESIGN.md`. Check items off as they land.
 - [ ] Resources: electricity (solar panels + battery bank, gas generators),
       gasoline, ammunition, food, water, medicine
 - [ ] Drone charging draws on electricity instead of being free
+- [ ] Game clock: when one exists, a warp must advance it by the skipped
+      flight time (`drone.warp()` already returns those seconds)
 
 ## Housekeeping
 - [ ] Turn on GitHub Pages (Settings → Pages → `main`, root)

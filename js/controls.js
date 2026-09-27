@@ -12,7 +12,7 @@ export function createControls(root, actions) {
   addEventListener('keydown', (e) => {
     if (e.target.closest?.('input')) return;
     if (KEYS[e.code]) { held.set(e.code, KEYS[e.code]); e.preventDefault(); return; }
-    const action = { KeyM: 'map', KeyC: 'view', KeyH: 'home' }[e.code];
+    const action = { KeyM: 'map', KeyC: 'view', KeyH: 'home', KeyJ: 'warp' }[e.code];
     if (action && !e.repeat) actions[action]?.();
   });
   addEventListener('keyup', (e) => held.delete(e.code));

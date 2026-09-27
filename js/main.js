@@ -57,11 +57,14 @@ async function init() {
     map: () => (map.isOpen ? map.close() : (controls.clear(), map.open())),
     view: () => { viewBtn.textContent = rig.toggle() === 'drone' ? 'View' : 'Cam'; },
     home: () => drone.goHome(),
+    warp: () => drone.warp(),
   };
   const controls = createControls($('#hud'), actions);
   $('#btn-map').onclick = actions.map;
   viewBtn.onclick = actions.view;
   $('#btn-home').onclick = actions.home;
+  const warpBtn = $('#btn-warp');
+  warpBtn.onclick = actions.warp;
 
   let last = performance.now();
   function frame(now) {
@@ -74,6 +77,7 @@ async function init() {
     } else {
       rig.update(dt, drone, input);
       hud.update(drone, rig);
+      warpBtn.hidden = !drone.canWarp();
       renderer.render(scene, camera);
     }
     requestAnimationFrame(frame);

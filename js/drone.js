@@ -7,6 +7,7 @@ const MAX_SPEED = 16, CLIMB_SPEED = 6, YAW_RATE = 1.6, ACCEL = 2.5;
 const CRUISE = 18, MIN_AGL = 0.3, MAX_AGL = 400;
 const DRAIN = 100 / (12 * 60); // percent per second of flight: 12 minutes
 const CHARGE = 2;               // percent per second on the pad
+const WARP_LEFT = 4;            // seconds of flight a warp leaves
 
 export function createDrone(terrain, reducedMotion) {
   const model = buildModel();
@@ -101,10 +102,33 @@ export function createDrone(terrain, reducedMotion) {
     say(atHome() ? 'Landed at home. Charging.' : 'Landed.');
   }
 
+  // Skip most of an autopilot leg. Battery pays for the skipped flight time,
+  // and the skipped seconds are returned for a future game clock.
+  function canWarp() {
+    const t = state.target;
+    return state.mode === 'auto' && !!t && Math.hypot(t.x - pos.x, t.z - pos.z) > CRUISE * WARP_LEFT * 2;
+  }
+
+  function warp() {
+    if (!canWarp()) return 0;
+    const t = state.target;
+    const dx = t.x - pos.x, dz = t.z - pos.z, dist = Math.hypot(dx, dz);
+    const skip = dist - CRUISE * WARP_LEFT;
+    const secs = skip / CRUISE;
+    pos.x += dx / dist * skip;
+    pos.z += dz / dist * skip;
+    pos.y = Math.max(pos.y, terrain.heightAt(pos.x, pos.z) + Math.min(t.agl, 15));
+    vel.set(dx / dist * CRUISE, 0, dz / dist * CRUISE);
+    state.yaw = Math.atan2(-dx, -dz);
+    state.battery = Math.max(0, state.battery - DRAIN * secs);
+    say(`Warped ${Math.round(secs)} s ahead`);
+    return secs;
+  }
+
   function atHome() { return Math.hypot(pos.x - HOME.x, pos.z - HOME.z) < 8; }
 
   return {
-    state, model, flyTo, update, atHome,
+    state, model, flyTo, update, atHome, canWarp, warp,
     goHome: () => flyTo(HOME.x, HOME.z, 40, true),
     onMessage: (fn) => listeners.push(fn),
     groundBelow: () => terrain.heightAt(pos.x, pos.z),
