@@ -9,6 +9,7 @@ export function createCameraRig(camera) {
   function update(dt, drone, input) {
     tilt = Math.min(0.3, Math.max(-Math.PI / 2, tilt + input.tilt * dt * 0.9));
     const { pos, yaw } = drone.state;
+    drone.model.visible = mode !== 'drone'; // don't see our own airframe from the camera
     if (mode === 'drone') {
       camera.position.set(pos.x, pos.y + 0.05, pos.z);
       camera.rotation.set(tilt, yaw, 0, 'YXZ');
