@@ -53,6 +53,23 @@ barricade materials and ammunition press, sorties to the shed and garage,
 fighting, survivors who ask to be let in, and supply runs for food and
 medicine.
 
+## Resources
+
+The group tracks supplies that run down and must be found, made or managed:
+
+- **Electricity**: charges the drone and runs lights, the radio, medical
+  equipment and more.
+  - Solar panels, with a battery bank to store the power.
+  - Generators that burn gasoline (gas is its own resource).
+- **Ammunition** (the basement press can reload it).
+- **Food** and **water**.
+- **Medicine** and medical supplies.
+
+## Drone landing pad
+
+The pad goes on a roof, not in the yard, because the ground is not safe with
+zombies around. For example a porch roof reached from an upstairs window.
+
 ## Build approach: start bare, add fidelity
 
 Build time and tokens are limited (Claude subscription), so each step should
