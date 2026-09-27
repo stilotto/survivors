@@ -18,5 +18,5 @@ The build steps come from `DESIGN.md`. Check items off as they land.
       flight time (`drone.warp()` already returns those seconds)
 
 ## Housekeeping
-- [ ] Turn on GitHub Pages (Settings → Pages → `main`, root)
+- [x] Turn on GitHub Pages (Settings → Pages → `main`, root)
 - [x] Add a Survivors card to the stilotto.github.io index page
