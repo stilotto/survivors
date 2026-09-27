@@ -72,10 +72,9 @@ be small and playable:
   never loads it live from third-party servers.
   - Elevation: AWS Terrain Tiles (terrarium PNGs), public; the build sandbox
     can reach them.
-  - Roads and buildings: OpenStreetMap (ODbL, credit needed). The build sandbox
-    can't reach OSM yet, so we either allow `overpass-api.de` in the
-    environment's network settings, or the owner downloads an OSM export of
-    the area and adds it to the repo.
+  - Roads, buildings, water, land use, places: OpenStreetMap data via
+    Overture Maps (public S3, reachable from the sandbox), baked into `data/`
+    by `tools/fetch_map.py`. ODbL, credit needed.
   - Aerial imagery: public-domain USDA NAIP or USGS imagery if we can get
     it; otherwise stylized textures.
 - Must work at phone width and honor prefers-reduced-motion.
