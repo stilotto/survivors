@@ -10,7 +10,7 @@ The build steps come from `DESIGN.md`. Check items off as they land.
   (layered plan in `DESIGN.md`, "Adding detail")
   - [x] Farmhouse modeled on the film-era house
   - [x] Yard: shed, gas pump, trees, driveway, grass
-  - [ ] Roofs on every building: a couple of pitched styles (gable, hip) and
+  - [x] Roofs on every building: a couple of pitched styles (gable, hip) and
         flat styles (parapet, rooftop units); downtown mostly flat
   - [ ] Trees everywhere (instanced, from land cover)
   - [ ] Distance tiles: near/mid/far detail (when frame rate needs it)
