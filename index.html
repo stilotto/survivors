@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Survivor</title>
+<meta name="description" content="Hold out in a farmhouse near Evans City, PA, and scout the countryside with a drone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<section id="title" class="screen">
+  <div class="title-card">
+    <h1>Survivor</h1>
+    <p class="sub">Evans City, PA</p>
+    <p>The dead are walking. You and the others are holed up in the old farmhouse
+      off Ash Stop Road. The grid is failing, but GPS still works, and you have a drone.</p>
+    <button id="launch" disabled>Loading map…</button>
+    <details class="help">
+      <summary>Controls</summary>
+      <p><b>Keys:</b> W/S forward/back, A/D sideways, Q/E or ←/→ turn,
+        R/F or ↑/↓ up/down, T/G camera tilt, M map, C view, H return home.</p>
+      <p><b>Touch:</b> left pad climbs and turns, right pad moves.</p>
+      <p><b>Map:</b> tap a spot, pick an altitude, and the drone flies there.
+        Any stick input takes back control.</p>
+    </details>
+    <p class="credits">Map data © OpenStreetMap contributors (ODbL), via Overture Maps.
+      Elevation: AWS Terrain Tiles (USGS).</p>
+    <a class="more" href="https://stilotto.github.io/">More games from Stilotto</a>
+  </div>
+</section>
+
+<section id="hud" hidden>
+  <div id="readout"></div>
+  <div id="message" role="status" aria-live="polite"></div>
+  <div class="top-buttons">
+    <button id="btn-map">Map</button>
+    <button id="btn-view">View</button>
+    <button id="btn-home">Home</button>
+  </div>
+  <div class="tilt">
+    <button data-hold="tilt:1" aria-label="Tilt camera up">⌃</button>
+    <button data-hold="tilt:-1" aria-label="Tilt camera down">⌄</button>
+  </div>
+  <div class="pad pad-left">
+    <button class="up" data-hold="climb:1" aria-label="Climb">▲</button>
+    <button class="left" data-hold="yaw:1" aria-label="Turn left">⟲</button>
+    <button class="right" data-hold="yaw:-1" aria-label="Turn right">⟳</button>
+    <button class="down" data-hold="climb:-1" aria-label="Descend">▼</button>
+  </div>
+  <div class="pad pad-right">
+    <button class="up" data-hold="fwd:1" aria-label="Forward">▲</button>
+    <button class="left" data-hold="strafe:-1" aria-label="Left">◀</button>
+    <button class="right" data-hold="strafe:1" aria-label="Right">▶</button>
+    <button class="down" data-hold="fwd:-1" aria-label="Back">▼</button>
+  </div>
+</section>
+
+<section id="map" hidden>
+  <canvas id="map-canvas"></canvas>
+  <div class="map-top">
+    <button id="map-close">Close</button>
+    <button id="map-center">Drone</button>
+    <button id="map-zoom-in" aria-label="Zoom in">+</button>
+    <button id="map-zoom-out" aria-label="Zoom out">−</button>
+  </div>
+  <div id="map-panel" hidden>
+    <label><span>Altitude <output id="alt-out">60</output> m</span>
+      <input id="alt" type="range" min="15" max="150" step="5" value="60"></label>
+    <button id="fly-here">Fly here</button>
+  </div>
+  <p class="map-hint" id="map-hint">Tap the map to pick a spot.</p>
+</section>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

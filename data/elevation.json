@@ -1,0 +1,14 @@
+{
+ "bbox": [
+  -80.12,
+  40.74,
+  -79.99,
+  40.82
+ ],
+ "width": 720,
+ "height": 581,
+ "widthMeters": 10958.2,
+ "heightMeters": 8845.9,
+ "encoding": "decimeters = R*256 + G",
+ "source": "AWS Terrain Tiles (terrarium) z14"
+}
