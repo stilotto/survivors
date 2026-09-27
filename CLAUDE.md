@@ -33,6 +33,12 @@ and scouts the area with a drone. See `DESIGN.md` for the full design.
   third-party map servers.
 - Must work at phone width and honor prefers-reduced-motion.
 - Keep files small and focused: one system per file.
+- **Check visual changes with the preview tool** before pushing:
+  `node tools/preview.mjs <out-dir> [view ...]` renders screenshots in
+  headless Chromium (presets: house, poster, yard, air, downtown, high,
+  game; or `name=x,y,z,lx,ly,lz`). It serves three.js from npm because the
+  cloud sandbox can't reach the CDN. Keep `tools/preview.html` building the
+  scene the same way as `js/main.js`.
 - Link back to the main site from the title screen with a plain, small, muted
   `<a href="https://stilotto.github.io/">More games from Stilotto</a>`
   (absolute URL, same tab). Never as a floating overlay on the game.

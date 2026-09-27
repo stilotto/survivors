@@ -1,0 +1,55 @@
+<!doctype html>
+<!-- Scene preview for tools/preview.mjs: builds the world like js/main.js
+     (keep the two in sync) and exposes window.shot() to render a view. -->
+<html><head><meta charset="utf-8"><base href="../"></head>
+<body style="margin:0">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+<canvas id="c" width="900" height="600"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { loadTerrain, buildTerrainMesh } from './js/terrain.js';
+import { loadMapData } from './js/data.js';
+import { paintGround, groundTexture } from './js/ground.js';
+import { buildBuildings } from './js/buildings.js';
+import { buildHouse, nearHouse } from './js/house.js';
+import { buildYard } from './js/yard.js';
+import { buildForest } from './js/forest.js';
+
+const r = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+const scene = new THREE.Scene();
+const sky = new THREE.Color(0xb8bdb8);
+scene.background = sky;
+scene.fog = new THREE.Fog(sky, 800, 7000);
+scene.add(new THREE.HemisphereLight(0xdfe3e8, 0x4a4a38, 1.6));
+const sun = new THREE.DirectionalLight(0xfff4e0, 1.4);
+sun.position.set(-0.5, 1, 0.35);
+scene.add(sun);
+
+const [terrain, data] = await Promise.all([loadTerrain(), loadMapData()]);
+data.buildings = data.buildings.filter((f) => !nearHouse(f.geometry));
+scene.add(buildTerrainMesh(terrain, groundTexture(paintGround(data, 4096), r)));
+scene.add(buildBuildings(data.buildings, terrain));
+scene.add(buildHouse(terrain));
+scene.add(buildYard(terrain, data.roads, r));
+const forest = buildForest(data, terrain, 1);
+scene.add(forest.group);
+
+const cam = new THREE.PerspectiveCamera(55, 1.5, 0.1, 20000);
+// Camera at (x, ground + y, z) looking at (lx, ground + ly, lz); heights are
+// above the ground at the look point. Near-detail tiles follow the camera.
+window.shot = (x, y, z, lx = 0, ly = 4, lz = -1) => {
+  forest.update(x, z);
+  const g = terrain.heightAt(lx, lz);
+  cam.position.set(x, g + y, z);
+  cam.lookAt(lx, g + ly, lz);
+  r.render(scene, cam);
+  return r.info.render.triangles;
+};
+window.ready = true;
+</script>
+</body></html>
