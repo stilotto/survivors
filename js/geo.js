@@ -19,8 +19,9 @@ const [minX, minZ] = toWorld(BBOX[0], BBOX[3]);
 const [maxX, maxZ] = toWorld(BBOX[2], BBOX[1]);
 export const WORLD = { minX, maxX, minZ, maxZ, width: maxX - minX, depth: maxZ - minZ };
 
-// Where the drone lands and recharges, in the yard south of the house.
-export const HOME = { x: 0, z: 14 };
+// Where the drone lands and recharges: a pad on the porch roof, just
+// outside the front bedroom window (see PAD in house.js).
+export const HOME = { x: -3.2, z: 4.95 };
 
 // Evans City's Main St, by the borough office and library.
 export const DOWNTOWN = { at: toWorld(-80.0615, 40.7687), radius: 350 };

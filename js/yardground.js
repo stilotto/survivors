@@ -51,7 +51,7 @@ function paint(lanes) {
     ctx.fillStyle = r() < 0.5 ? '#9b9383' : '#6f685b';
     ctx.fillRect(x, y, 2, 2);
   }
-  // Worn path from the porch steps to the landing pad.
+  // Worn path from the porch steps into the yard.
   ctx.strokeStyle = 'rgba(122,106,80,0.7)'; ctx.lineWidth = 0.9 * s;
   trace([[-2.2, 7], [-1.5, 10], [0, 13]]); ctx.stroke();
 

@@ -144,7 +144,8 @@ The group tracks supplies that run down and must be found, made or managed:
 ## Drone landing pad
 
 The pad goes on a roof, not in the yard, because the ground is not safe with
-zombies around. For example a porch roof reached from an upstairs window.
+zombies around. It sits on the porch roof, just outside the front bedroom
+window, so the drone goes out and comes back in without anyone touching the ground.
 
 ## Build approach: start bare, add fidelity
 

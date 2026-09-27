@@ -145,6 +145,13 @@ button.link { background: none; border: 0; color: var(--muted); text-decoration:
 .staff { color: #4a4336; }
 .room-text > select { font: inherit; margin: 0 0 12px; padding: 6px; background: #fff; color: #2a2620;
   border: 1px solid rgba(0,0,0,0.3); border-radius: 4px; max-width: 100%; }
+/* Arrows at the screen edges to step through the rooms. */
+#table .t-edge { position: fixed; top: 50%; transform: translateY(-50%); width: 32px; height: 72px; padding: 0;
+  font-size: 32px; line-height: 1; background: rgba(239,232,214,0.85); box-shadow: 0 1px 4px rgba(0,0,0,0.3); z-index: 2; }
+#t-prev { left: max(0px, env(safe-area-inset-left)); border-radius: 0 6px 6px 0; border-left: 0; }
+#t-next { right: max(0px, env(safe-area-inset-right)); border-radius: 6px 0 0 6px; border-right: 0; }
+#table .t-edge[hidden] { display: none; }
+#table.in-room #t-body { padding: 0 38px 16px; }
 .looks { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
 
 /* Looking out a window: the live scene behind a sash, wall around it. */

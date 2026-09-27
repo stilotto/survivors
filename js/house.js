@@ -15,8 +15,16 @@ const PORCH = { x0: -7, x1: -0.5, depth: 2.4, h: 2.9 };
 const SOLIDS = [
   { x0: -W / 2, x1: W / 2, z0: -D / 2, z1: D / 2, top: BASE + H + RISE },
   { x0: WING.x0, x1: WING.x1, z0: -D / 2 - WING.depth, z1: -D / 2, top: BASE + WING.h + WING.rise },
-  { x0: PORCH.x0, x1: PORCH.x1, z0: D / 2, z1: D / 2 + PORCH.depth, top: BASE + PORCH.h + 0.3 },
+  { x0: PORCH.x0, x1: PORCH.x1, z0: D / 2, z1: D / 2 + PORCH.depth, top: BASE + PORCH.h + 0.32 },
 ];
+
+// Height of the highest solid under (x, z), relative to the ground at the
+// house, or -Infinity off the house. The drone lands on the porch roof.
+export function houseTop(x, z) {
+  let top = -Infinity;
+  for (const s of SOLIDS) if (x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1) top = Math.max(top, s.top);
+  return top;
+}
 
 // True for a footprint on the farmhouse site (within 30 m).
 export function nearHouse(geom) {
@@ -121,10 +129,18 @@ export function buildHouse(terrain) {
   const b = terrain.heightAt(0, 0) + BASE;
   group.add(mainBlock(b), rearWing(b), porch(b));
 
-  const pad = new THREE.Mesh(new THREE.CircleGeometry(1.5, 24),
-    new THREE.MeshLambertMaterial({ color: 0xd9c38a }));
-  pad.rotation.x = -Math.PI / 2;
-  pad.position.set(HOME.x, terrain.heightAt(HOME.x, HOME.z) + 0.15, HOME.z);
-  group.add(pad);
+  group.add(dronePad(b));
   return group;
+}
+
+// A square of plywood on the porch roof under the front bedroom window,
+// with a painted H, so the drone goes out the window and never lands in the yard.
+function dronePad(b) {
+  const g = new THREE.Group();
+  const y = b + PORCH.h + 0.33;
+  g.add(box(1.5, 0.03, 1.5, new THREE.MeshLambertMaterial({ color: 0xc9a86a }), HOME.x, y, HOME.z));
+  const paint = new THREE.MeshLambertMaterial({ color: 0xece6d6 });
+  for (const dx of [-0.3, 0.3]) g.add(box(0.1, 0.01, 0.8, paint, HOME.x + dx, y + 0.02, HOME.z));
+  g.add(box(0.5, 0.01, 0.1, paint, HOME.x, y + 0.02, HOME.z));
+  return g;
 }

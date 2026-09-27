@@ -1,7 +1,7 @@
 // Drone model and flight: manual control, GPS autopilot, battery.
 import * as THREE from 'three';
 import { HOME, WORLD } from './geo.js';
-import { houseCollide } from './house.js';
+import { houseCollide, houseTop } from './house.js';
 
 const MAX_SPEED = 16, CLIMB_SPEED = 6, YAW_RATE = 1.6, ACCEL = 2.5;
 const CRUISE = 18, MIN_AGL = 0.3, MAX_AGL = 400;
@@ -13,10 +13,12 @@ const START_YAW = 70 * Math.PI / 180; // launch heading 290°: house on the righ
 export function createDrone(terrain, reducedMotion) {
   const model = buildModel();
   model.rotation.order = 'YXZ';
-  const pos = new THREE.Vector3(HOME.x, terrain.heightAt(HOME.x, HOME.z) + MIN_AGL, HOME.z);
+  const houseGround = terrain.heightAt(0, 0);
+  // What the drone stands on: the ground, or the house where it's in the way (the pad is on the porch roof).
+  const floorAt = (x, z) => Math.max(terrain.heightAt(x, z), houseGround + houseTop(x, z));
+  const pos = new THREE.Vector3(HOME.x, floorAt(HOME.x, HOME.z) + MIN_AGL, HOME.z);
   const vel = new THREE.Vector3();
   const state = { pos, vel, yaw: START_YAW, battery: 100, mode: 'landed', target: null, landing: false, rotor: 0 };
-  const houseGround = terrain.heightAt(0, 0);
   const listeners = [];
   let charger = (pct) => pct; // returns how much charge the house can give
   const say = (msg) => listeners.forEach((fn) => fn(msg));
@@ -30,7 +32,7 @@ export function createDrone(terrain, reducedMotion) {
   }
 
   function update(dt, input) {
-    const ground = terrain.heightAt(pos.x, pos.z);
+    const ground = floorAt(pos.x, pos.z);
     const manual = input.fwd || input.strafe || input.climb || input.yaw;
     const dead = state.battery <= 0;
     if (manual && state.mode === 'auto' && !dead) { state.mode = 'manual'; state.target = null; say('Manual control'); }
@@ -51,7 +53,7 @@ export function createDrone(terrain, reducedMotion) {
       const dx = t.x - pos.x, dz = t.z - pos.z, dist = Math.hypot(dx, dz);
       // Hold altitude above the higher of the ground here and a bit ahead.
       const ahead = Math.min(dist, 60) / Math.max(dist, 1);
-      const floor = Math.max(ground, terrain.heightAt(pos.x + dx * ahead, pos.z + dz * ahead));
+      const floor = Math.max(ground, floorAt(pos.x + dx * ahead, pos.z + dz * ahead));
       const arrived = dist < 1.5;
       const agl = arrived && state.landing ? 0 : t.agl;
       want.y = clamp((floor + agl - pos.y) * 0.8, -CLIMB_SPEED, CLIMB_SPEED);
@@ -73,7 +75,7 @@ export function createDrone(terrain, reducedMotion) {
       pos.z = clamp(pos.z, WORLD.minZ + 10, WORLD.maxZ - 10);
       pos.y = Math.min(pos.y, ground + MAX_AGL);
       houseCollide(pos, vel, houseGround);
-      const g = terrain.heightAt(pos.x, pos.z) + MIN_AGL;
+      const g = floorAt(pos.x, pos.z) + MIN_AGL;
       if (pos.y <= g) {
         pos.y = g;
         if (vel.y < 0) vel.y = 0;
@@ -135,7 +137,7 @@ export function createDrone(terrain, reducedMotion) {
     setCharger: (fn) => { charger = fn; },
     // Back on the pad with a full battery (overnight on the solar panels).
     reset() {
-      pos.set(HOME.x, terrain.heightAt(HOME.x, HOME.z) + MIN_AGL, HOME.z);
+      pos.set(HOME.x, floorAt(HOME.x, HOME.z) + MIN_AGL, HOME.z);
       vel.set(0, 0, 0);
       Object.assign(state, { yaw: START_YAW, battery: 100, mode: 'landed', target: null, landing: false,
         lowWarned: false, deadWarned: false });

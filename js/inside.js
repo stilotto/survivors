@@ -5,7 +5,7 @@
 import { SKILLS, SKILL_NAMES, HURT } from './people.js';
 import { TASKS, AWAY } from './dayend.js';
 import { milesFromHome } from './sites.js';
-import { roomById, cutaway } from './rooms.js';
+import { ROOMS, roomById, cutaway } from './rooms.js';
 import { canvasFor } from './sketch.js';
 import { windowsFor } from './lookout.js';
 
@@ -23,6 +23,22 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
     el.hidden = true;
     onClose();
   };
+  // Step through the rooms with the edge arrows or the arrow keys.
+  const prev = el.querySelector('#t-prev'), next = el.querySelector('#t-next');
+  const step = (d) => {
+    const i = ROOMS.findIndex((r) => r.id === where);
+    if (i < 0) return;
+    where = ROOMS[(i + d + ROOMS.length) % ROOMS.length].id;
+    render();
+  };
+  prev.onclick = () => step(-1);
+  next.onclick = () => step(1);
+  addEventListener('keydown', (e) => {
+    if (el.hidden || e.target.closest?.('input, select, textarea')) return;
+    if (e.code === 'ArrowLeft') step(-1);
+    else if (e.code === 'ArrowRight') step(1);
+  });
+
   el.querySelector('#t-end').onclick = () => {
     if (getGame().over) { onRestart(); return; }
     onEnd();
@@ -102,6 +118,8 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
     el.querySelector('#t-where').textContent = room ? `Day ${game.day}` : 'The farmhouse. Tap a room.';
     el.querySelector('#t-close').textContent = room ? '← House' : 'Back to the drone';
     tabs.hidden = !room?.plans;
+    prev.hidden = next.hidden = !room;
+    el.classList.toggle('in-room', !!room);
     for (const b of el.querySelectorAll('[data-tab]')) b.classList.toggle('active', b.dataset.tab === tab);
     el.querySelector('#t-end').textContent = game.over ? 'Start over' : 'End the day';
     body.innerHTML = '';
