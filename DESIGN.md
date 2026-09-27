@@ -72,6 +72,11 @@ a gamble), told as plainly and realistically as we can.
    they can carry), people eat and drink, the house draws the dead closer,
    and the night tests the boards and the guards. The journal tells it.
 
+**The dead** have jointed legs, arms and heads and one of six gaits each
+(`js/gaits.js`): shuffle, stagger, limp, lunge, leg-drag and crawl. Feet
+keep time with the ground they cover so they don't skate. When they notice
+a low drone, faces tip up and hands reach for it.
+
 **What's hidden in the world**: every building is a site with supplies by
 kind (gas station, grocery, hardware, clinic, church, farm, house...),
 scaled by size and randomized, the dead around it (more in town, none near
