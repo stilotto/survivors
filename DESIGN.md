@@ -13,8 +13,14 @@ set in and around Evans City, PA, where a classic 1968 horror film was shot. The
   own version of the film-era farmhouse on that spot.
   GPS: 40.784411, -80.027484 (matches a building footprint in
   `data/buildings.json`, about 200 m south of Ash Stop Rd).
-- Landmarks to add over time: Evans City Cemetery (the opening scene), the
-  downtown, Route 68, farms, woods, creeks.
+- Landmarks to add over time: the important cemetery, the downtown,
+  Route 68, farms, woods, creeks.
+
+## The important cemetery
+
+Evans City Cemetery, where the film's opening scene was shot. In the game
+and docs we call it "the important cemetery".
+GPS: 40.762394, -80.064003.
 
 ## Story hook: GPS still works
 

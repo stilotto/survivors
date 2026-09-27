@@ -14,7 +14,7 @@ The build steps come from `DESIGN.md`. Check items off as they land.
         flat styles (parapet, rooftop units); downtown mostly flat
   - [ ] Trees everywhere (instanced, from land cover)
   - [ ] Distance tiles: near/mid/far detail (when frame rate needs it)
-  - [ ] Landmarks: cemetery, downtown
+  - [ ] Landmarks: the important cemetery (see `DESIGN.md`), downtown
 - [ ] 5. Zombie crowds and the attack scene
 
 ## Ideas logged
