@@ -25,6 +25,7 @@ import { createLookout } from './lookout.js';
 import { createAmbient } from './ambient.js';
 import { newGame, loadGame, saveGame, hasSave, clearSave, addPhoto } from './game.js';
 import { endDay } from './dayend.js';
+import { createPorch, visitorToday } from './visitors.js';
 import { bestAt } from './people.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -77,6 +78,8 @@ async function init() {
   scene.add(signals.group);
   const ambient = createAmbient(terrain, reducedMotion);
   scene.add(ambient.group);
+  const porch = createPorch(terrain);
+  scene.add(porch.group);
   const populate = () => {
     walkers.populate(sites, game.threat, game.day, game.seed);
     signals.populate(sites);
@@ -124,7 +127,11 @@ async function init() {
 
   const table = createInside($('#table'), {
     getGame: () => game, getDrone: () => drone, sites,
-    onClose: () => saveGame(game, sites),
+    onClose: () => {
+      saveGame(game, sites);
+      const v = visitorToday(game);
+      if (v && !v.said) { v.said = true; subs.say(spotter(), 'Somebody\'s on the front porch, right under the pad. They\'re waiting on an answer.'); }
+    },
     onEnd: () => {
       endDay(game, sites, data.roads);
       drone.reset();
@@ -184,6 +191,7 @@ async function init() {
   function frame(now) {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
+    porch.show(visitorToday(game)?.people.length ?? 0);
     const input = map.isOpen || table.isOpen || lookout.isOpen ? { fwd: 0, strafe: 0, climb: 0, yaw: 0, tilt: 0 } : controls.read();
     drone.update(dt, input);
     clock += dt;

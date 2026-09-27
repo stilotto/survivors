@@ -3,6 +3,7 @@
 import { GOODS, siteRef, milesFromHome, neighborhood } from './sites.js';
 import { makePerson, bestAt } from './people.js';
 import { latestPhoto } from './game.js';
+import { arrive, resolveNight } from './visitors.js';
 
 export const TASKS = {
   rest: 'Rest', guard: 'Keep watch at night', fortify: 'Board up the house', garden: 'Work the garden',
@@ -177,6 +178,7 @@ export function endDay(game, sites, roads) {
   }
 
   // The night.
+  resolveNight(game, lines);
   game.threat += 0.8 + game.day * 0.06;
   const guards = doing('guard');
   const defense = game.fort + guards.reduce((a, p) => a + p.skills.fight * 1.5, 0) + home.length * 0.4;
@@ -209,6 +211,8 @@ export function endDay(game, sites, roads) {
   }
   if (game.day === 1) lines.push(RADIO[0]);
   else if (Math.random() < 0.5) lines.push(RADIO[1 + Math.floor(Math.random() * (RADIO.length - 1))]);
+
+  arrive(game, sites, roads, lines);
 
   for (const [id, o] of Object.entries(game.orders)) if (AWAY.has(o.task)) game.orders[id] = { task: 'rest' };
   const entry = { day: game.day, when: 'night', lines };

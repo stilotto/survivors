@@ -8,6 +8,7 @@ import { milesFromHome } from './sites.js';
 import { ROOMS, roomById, cutaway } from './rooms.js';
 import { canvasFor } from './sketch.js';
 import { windowsFor } from './lookout.js';
+import { visitorToday, letIn, turnAway, medicNote } from './visitors.js';
 
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -111,6 +112,24 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
     }).join('');
   }
 
+  // Someone on the porch, waiting on an answer.
+  function door(game) {
+    const v = visitorToday(game);
+    if (!v || game.over) return '';
+    const medic = medicNote(game, v);
+    return `<section class="door"><h3>Someone at the front door</h3>
+      <p>${v.people.length > 1 ? 'Two people' : 'A stranger'}, ${esc(v.from)}.${v.gift ? ' They say they have food to share.' : ''}</p>
+      ${v.people.map((p, i) => `<p><b>${esc(p.name)}</b> ${esc(p.past)}. Up close, ${esc(p.first)} ${esc(v.notes[i])}.</p>`).join('')}
+      ${medic ? `<p class="medic">${esc(medic)}</p>` : ''}
+      <div class="door-btns"><button data-door="in">Let them in</button><button data-door="out">Send them away</button></div></section>`;
+  }
+
+  function wireDoor(game) {
+    for (const b of body.querySelectorAll('[data-door]')) {
+      b.onclick = () => { (b.dataset.door === 'in' ? letIn : turnAway)(game); render(); };
+    }
+  }
+
   function render() {
     const game = getGame();
     const room = roomById(where);
@@ -126,7 +145,8 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
     body.scrollTop = 0;
 
     if (!room) {
-      body.innerHTML = cutaway(game, getDrone());
+      body.innerHTML = door(game) + cutaway(game, getDrone());
+      wireDoor(game);
       for (const g of body.querySelectorAll('[data-room]')) {
         const go = () => { where = g.dataset.room; render(); };
         g.addEventListener('click', go);
@@ -139,12 +159,14 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
     const text = document.createElement('div');
     text.className = 'room-text';
     const looks = windowsFor(room.id);
-    text.innerHTML = `<p>${esc(room.text)}</p>`
+    text.innerHTML = (['living', 'dining'].includes(room.id) ? door(game) : '')
+      + `<p>${esc(room.text)}</p>`
       + (looks.length ? `<div class="looks">${looks.map((v, i) => `<button data-look="${i}">Look out: ${esc(v.name.toLowerCase())}</button>`).join('')}</div>` : '')
       + (room.job ? staff(game, room) : '')
       + (room.id === 'bedrooms' ? roster(game) : '')
       + (room.plans ? { people, photos, journal }[tab](game) : '');
     body.append(text);
+    wireDoor(game);
 
     for (const b of body.querySelectorAll('[data-look]')) {
       b.onclick = () => { el.hidden = true; onLook(room, +b.dataset.look); };
