@@ -12,6 +12,8 @@ filmed. The group holds out in a farmhouse. Their best asset is a drone.
   260 Ash Stop Rd, Evans City, off Route 68, about 25 mi north of Pittsburgh.
   The original was demolished and a cabin stands there now, so we build our
   own version of the film-era farmhouse on that spot.
+  GPS: 40.784411, -80.027484 (matches a building footprint in
+  `data/buildings.json`, about 200 m south of Ash Stop Rd).
 - Landmarks to add over time: Evans City Cemetery (the opening scene), the
   downtown, Route 68, farms, woods, creeks.
 
