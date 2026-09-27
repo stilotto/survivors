@@ -83,6 +83,35 @@ be small and playable:
    a detailed farmhouse.
 5. Zombie crowds and the attack scene.
 
+## Adding detail: layers, not map slices
+
+The world is too big to detail by hand, so detail comes in layers applied
+to the whole map, plus a few hand-built spots. Each item is one to three
+small commits the owner can check on the live site.
+
+1. **Rules, map-wide.** Code that turns data we already have into detail at
+   load time, so it costs no new data: pitched roofs on every building
+   footprint, trees along woods and field edges (instanced, so thousands
+   are cheap), fences, hedgerows, field textures.
+2. **Hand-built spots.** Only where the player spends time: the farmhouse
+   and yard first, later landmarks such as the cemetery and downtown. One
+   small file each.
+3. **Detail by distance.** When the frame rate needs it (phones first),
+   split the map into tiles and give each tile near/mid/far versions:
+   full detail near the drone (under ~300 m), simple shapes in the middle,
+   the painted ground far off. Tiles swap as the drone moves.
+
+Roofs: a couple of styles each, picked per building so streets don't repeat.
+Pitched (gable, hip) for houses, barns and sheds out in the country; flat
+(plain with a parapet, and flat with rooftop units or vents) for most of
+downtown and for commercial and industrial buildings.
+
+Trees: a variety of shapes and sizes (spruce, pine, round broadleaf, oak,
+poplar, dead trees), with random height, spread and tint per tree.
+
+Order: the yard, roofs everywhere, trees everywhere, distance tiles (when
+needed), then landmarks one at a time.
+
 ## Tech
 
 - Three.js from a CDN for 3D rendering. Plain JS modules, no bundler.

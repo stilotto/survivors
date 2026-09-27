@@ -83,23 +83,23 @@ function place(g, face, at, u, y) {
 
 // A gable-end wall triangle of the given base width and rise, in the x/y
 // plane, extruded `depth` along z.
-export function gableWall(width, rise, depth) {
+export function gableWall(width, rise, depth, mat = sidingMeters) {
   const shape = new THREE.Shape([
     new THREE.Vector2(-width / 2, 0), new THREE.Vector2(width / 2, 0), new THREE.Vector2(0, rise),
   ]);
   const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
   geo.translate(0, 0, -depth / 2);
-  return new THREE.Mesh(geo, sidingMeters);
+  return new THREE.Mesh(geo, mat);
 }
 
 // A gable roof of two slabs, ridge along local x. `span` is the wall depth
 // under it; the group's origin sits at the eave line, centered.
-export function gableRoof(len, span, rise, overhang = 0.4) {
+export function gableRoof(len, span, rise, overhang = 0.4, mat = MAT.roof) {
   const g = new THREE.Group();
   const a = Math.atan2(rise, span / 2);
   const L = Math.hypot(rise, span / 2) + overhang, t = 0.15;
   for (const s of [1, -1]) {
-    const slab = box(len + 2 * overhang, t, L, MAT.roof,
+    const slab = box(len + 2 * overhang, t, L, mat,
       0, rise - (L / 2) * Math.sin(a) + (t / 2) * Math.cos(a), s * ((L / 2) * Math.cos(a) + (t / 2) * Math.sin(a)));
     slab.rotation.x = s * a;
     g.add(slab);

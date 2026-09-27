@@ -7,6 +7,14 @@ The build steps come from `DESIGN.md`. Check items off as they land.
 - [x] 2. Roads and building footprints from map data (painted roads, extruded buildings)
 - [ ] 3. Window view from the house; smoke, aircraft and zombie events
 - [ ] 4. Better art: imagery or textures, trees, fields, a detailed farmhouse
+  (layered plan in `DESIGN.md`, "Adding detail")
+  - [x] Farmhouse modeled on the film-era house
+  - [x] Yard: shed, gas pump, trees, driveway, grass
+  - [ ] Roofs on every building: a couple of pitched styles (gable, hip) and
+        flat styles (parapet, rooftop units); downtown mostly flat
+  - [ ] Trees everywhere (instanced, from land cover)
+  - [ ] Distance tiles: near/mid/far detail (when frame rate needs it)
+  - [ ] Landmarks: cemetery, downtown
 - [ ] 5. Zombie crowds and the attack scene
 
 ## Ideas logged

@@ -2,6 +2,8 @@
 import * as THREE from 'three';
 import { WORLD } from './geo.js';
 
+const MESH_STEP = 25; // meters between terrain mesh grid points
+
 export async function loadTerrain() {
   const meta = await (await fetch('data/elevation.json')).json();
   const img = new Image();
@@ -24,13 +26,28 @@ export async function loadTerrain() {
       + heights[k + w] * (1 - fu) * fv + heights[k + w + 1] * fu * fv;
   }
 
+  // Height of the drawn mesh (flat triangles between grid points), for
+  // things that must sit exactly on the visible ground.
+  const cols = Math.ceil(WORLD.width / MESH_STEP) + 1, rows = Math.ceil(WORLD.depth / MESH_STEP) + 1;
+  const cw = WORLD.width / (cols - 1), ch = WORLD.depth / (rows - 1);
+  function surfaceAt(x, z) {
+    const u = Math.min(Math.max((x - WORLD.minX) / cw, 0), cols - 1.001);
+    const v = Math.min(Math.max((z - WORLD.minZ) / ch, 0), rows - 1.001);
+    const c = Math.floor(u), r = Math.floor(v), fu = u - c, fv = v - r;
+    const at = (i, j) => heightAt(WORLD.minX + i * cw, WORLD.minZ + j * ch);
+    const hb = at(c + 1, r), hd = at(c, r + 1);
+    if (fu + fv <= 1) { const ha = at(c, r); return ha + fu * (hb - ha) + fv * (hd - ha); }
+    const he = at(c + 1, r + 1);
+    return he + (1 - fu) * (hd - he) + (1 - fv) * (hb - he);
+  }
+
   let min = Infinity;
   for (const v of heights) min = Math.min(min, v);
-  return { heightAt, minHeight: min };
+  return { heightAt, surfaceAt, minHeight: min };
 }
 
 // Grid mesh over the whole area, textured with the painted ground canvas.
-export function buildTerrainMesh(terrain, texture, step = 25) {
+export function buildTerrainMesh(terrain, texture, step = MESH_STEP) {
   const cols = Math.ceil(WORLD.width / step) + 1, rows = Math.ceil(WORLD.depth / step) + 1;
   const pos = new Float32Array(cols * rows * 3), uv = new Float32Array(cols * rows * 2);
   for (let r = 0; r < rows; r++) {
