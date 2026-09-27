@@ -41,6 +41,60 @@ flying overhead.
   flies there on its own. The player can take over at any time.
 - Battery and range limits give each flight weight (tuned later).
 
+## Gameplay loop (first draft)
+
+A slow, day-by-day holdout: a small group, a map full of places to search,
+and a drone to decide where to risk going. The feel we're after is a
+colony-survival game (careful choices, people you get attached to, each run
+a gamble), told as plainly and realistically as we can.
+
+**Each day**
+1. **Fly and photograph.** The drone is how the group sees the world. Press
+   the shutter (P) to take a picture. Only what the picture could show is
+   known: the building nearest the middle of the frame, the dead close
+   enough to make out (figures ~4 px or bigger count; smaller ones are
+   "maybe more"), cars, and any sign of people.
+2. **The spotter talks.** Whoever is watching the feed at the house
+   (the "Watch the drone feed" job, or the best at Tech) says what they see
+   over the radio, shown as subtitles. They know the area ("That's the
+   ProGas. I used to fill up there."), count what they can see, guess what's
+   inside, and say how far it is. They also speak up on their own: writing
+   spotted on the grass, the dead looking up at a low drone, a long way home
+   on a low battery. **No labels or markers over the 3D view, ever.**
+3. **The kitchen table** (House button, B). Paper and pencil: the day's
+   supplies, the prints pinned up with the spotter's notes, the journal, and
+   one job per person for tomorrow: rest, keep watch at night, board up the
+   house, work the garden, watch the drone feed, a supply run, or go talk to
+   survivors. Runs and recruiting can only target places that have a photo;
+   a fresh photo (today or yesterday) makes the run safer.
+4. **End the day.** Runs play out (distance, gas for the truck, the dead
+   near the place vs. fighting skill and ammo, what's left inside, what
+   they can carry), people eat and drink, the house draws the dead closer,
+   and the night tests the boards and the guards. The journal tells it.
+
+**What's hidden in the world**: every building is a site with supplies by
+kind (gas station, grocery, hardware, clinic, church, farm, house...),
+scaled by size and randomized, the dead around it (more in town, none near
+the farmhouse at first), cars (gas to siphon) and, at a dozen places,
+holdouts. Holdouts spread a painted bedsheet (HELP, SOS, ALIVE...) on the
+grass and come out to wave when they hear the drone.
+
+**People**: name, a line about who they were, five skills (Fighting,
+Scrounging, Medicine, Building, Tech), hurt / badly hurt, hungry. Badly hurt
+people can't go out; a third wound kills. A medic with medicine patches
+people up.
+
+**Pressure**: food and water each day (the hand pump gives some water),
+gas for the truck and the drone's charger, a growing crowd of the dead
+gathering in the woods around the house (visible from the drone), and
+nights that get worse.
+
+**Ideas for next passes**: claiming and fortifying nearby buildings to grow
+the group's ground; the barn and shed as workshops; solar panels and the
+battery bank; other groups, some hostile; trading; the important cemetery
+and downtown as landmarks with story; time of day and night flights with a
+thermal camera; the window views; weather.
+
 ## Looking out the windows
 
 - Every room in the house has windows, and each one shows the live sim from

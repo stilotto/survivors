@@ -7,7 +7,7 @@
 <meta name="description" content="Hold out in a farmhouse near Evans City, PA, and scout the countryside with a drone.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Caveat:wght@500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script type="importmap">
 { "imports": {
@@ -26,13 +26,18 @@
     <p>The dead are walking. You and the others are holed up in the old farmhouse
       off Ash Stop Road. The grid is failing, but GPS still works, and you have a drone.</p>
     <button id="launch" disabled>Loading map…</button>
+    <p><button id="restart" class="link" hidden>Start over</button></p>
     <details class="help">
       <summary>Controls</summary>
       <p><b>Keys:</b> W/S forward/back, A/D sideways, Q/E or ←/→ turn,
-        R/F or ↑/↓ up/down, T/G camera tilt, M map, C view, H return home.</p>
+        R/F or ↑/↓ up/down, T/G camera tilt, P photo, M map, C view, H return home, B the house.</p>
       <p><b>Touch:</b> left pad climbs and turns, right pad moves.</p>
       <p><b>Map:</b> tap a spot, pick an altitude, and the drone flies there.
         Any stick input takes back control.</p>
+      <p><b>Playing:</b> photograph places with the drone. Whoever is watching the feed
+        at the house will tell you what they see. Back at the house, send people on
+        supply runs to the places you photographed, or to talk to anyone you found alive,
+        then end the day.</p>
     </details>
     <p class="credits">Map data © OpenStreetMap contributors (ODbL), via Overture Maps.
       Elevation: AWS Terrain Tiles (USGS).</p>
@@ -43,10 +48,14 @@
 <section id="hud" hidden>
   <div id="readout"></div>
   <div id="message" role="status" aria-live="polite"></div>
+  <p id="subs" aria-live="polite"></p>
+  <div id="flash"></div>
+  <button id="btn-photo" aria-label="Take a photo (P)" title="Photo (P)"></button>
   <div class="top-buttons">
     <button id="btn-map">Map</button>
     <button id="btn-view">Cam</button>
-    <button id="btn-home">Home</button>
+    <button id="btn-home" title="Return home (H)">Return</button>
+    <button id="btn-house" title="The house (B)">House</button>
     <button id="btn-warp" hidden title="Warp (J)">Warp</button>
   </div>
   <div class="tilt">
@@ -81,6 +90,20 @@
     <button id="fly-here">Fly here</button>
   </div>
   <p class="map-hint" id="map-hint">Tap the map to pick a spot.</p>
+</section>
+
+<section id="table" hidden>
+  <header>
+    <div><h2 id="t-day">Day 1</h2><p id="t-supplies"></p></div>
+    <button id="t-close">Back to the drone</button>
+  </header>
+  <nav>
+    <button data-tab="people">People</button>
+    <button data-tab="photos">Photos</button>
+    <button data-tab="journal">Journal</button>
+  </nav>
+  <div id="t-body"></div>
+  <footer><button id="t-end">End the day</button></footer>
 </section>
 
 <script type="module" src="js/main.js"></script>

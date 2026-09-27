@@ -1,7 +1,7 @@
 // Full-screen map: pan, zoom, tap a spot, pick an altitude, fly there.
 import { WORLD, HOME } from './geo.js';
 
-export function createMap(el, groundCanvas, drone, onClose) {
+export function createMap(el, groundCanvas, drone, onClose, marks = () => []) {
   const canvas = el.querySelector('#map-canvas');
   const ctx = canvas.getContext('2d');
   const panel = el.querySelector('#map-panel');
@@ -93,6 +93,13 @@ export function createMap(el, groundCanvas, drone, onClose) {
     ctx.beginPath(); ctx.moveTo(hx, hy - 10); ctx.lineTo(hx + 8, hy - 2); ctx.lineTo(hx + 6, hy + 7);
     ctx.lineTo(hx - 6, hy + 7); ctx.lineTo(hx - 8, hy - 2); ctx.closePath(); ctx.stroke(); ctx.fill();
     label('Home', hx, hy + 20);
+
+    // Pencil circles where drone photos were taken.
+    ctx.strokeStyle = 'rgba(20, 20, 20, 0.8)'; ctx.lineWidth = 1.5;
+    for (const m of marks()) {
+      const [mx, my] = toScreen(m.x, m.z);
+      ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI * 2); ctx.stroke();
+    }
 
     const t = drone.state.target;
     const s = drone.state;

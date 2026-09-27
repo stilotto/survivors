@@ -1,5 +1,5 @@
 // Loads the baked map layers from data/.
-const LAYERS = ['roads', 'buildings', 'water', 'landuse', 'landcover'];
+const LAYERS = ['roads', 'buildings', 'water', 'landuse', 'landcover', 'places'];
 
 export async function loadMapData() {
   const entries = await Promise.all(LAYERS.map(async (name) => {

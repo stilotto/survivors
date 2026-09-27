@@ -20,11 +20,22 @@ The build steps come from `DESIGN.md`. Check items off as they land.
   - [ ] Landmarks: the important cemetery (see `DESIGN.md`), downtown
 - [ ] 5. Zombie crowds and the attack scene
 
+## Gameplay (first draft, see `DESIGN.md`, "Gameplay loop")
+- [x] Sites: every building has hidden supplies, the dead, cars, some holdouts
+- [x] The dead as instanced figures that wander and follow a low drone
+- [x] Parked cars; holdouts' painted sheets and waving
+- [x] Drone photos and the spotter's radio commentary (subtitles)
+- [x] Kitchen table: jobs, prints, journal; end of day, runs, recruiting, nights
+- [x] Save in the browser
+- [ ] Tune numbers after playtesting (supplies, danger, threat growth)
+- [ ] Claim nearby buildings; workshops; solar and battery bank
+- [ ] Other groups; trading
+
 ## Ideas logged
 - [ ] Move the landing pad to a roof (porch roof reached from an upstairs window)
 - [ ] Resources: electricity (solar panels + battery bank, gas generators),
       gasoline, ammunition, food, water, medicine
-- [ ] Drone charging draws on electricity instead of being free
+- [x] Drone charging draws on electricity instead of being free (generator gas by day, solar overnight)
 - [ ] Game clock: when one exists, a warp must advance it by the skipped
       flight time (`drone.warp()` already returns those seconds)
 

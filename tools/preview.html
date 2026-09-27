@@ -19,6 +19,10 @@ import { buildBuildings } from './js/buildings.js';
 import { buildHouse, nearHouse } from './js/house.js';
 import { buildYard } from './js/yard.js';
 import { buildForest } from './js/forest.js';
+import { buildSites, placeSurvivors } from './js/sites.js';
+import { buildCars } from './js/cars.js';
+import { createWalkers } from './js/walkers.js';
+import { createSignals } from './js/signals.js';
 
 const r = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
 const scene = new THREE.Scene();
@@ -38,12 +42,26 @@ scene.add(buildHouse(terrain));
 scene.add(buildYard(terrain, data.roads, r));
 const forest = buildForest(data, terrain, 1);
 scene.add(forest.group);
+const sites = buildSites(data.buildings, data.places);
+placeSurvivors(sites, 1);
+scene.add(buildCars(sites, terrain));
+const walkers = createWalkers(terrain);
+walkers.populate(sites, 6, 1, 1);
+scene.add(walkers.mesh);
+const signals = createSignals(terrain);
+signals.populate(sites);
+scene.add(signals.group);
+window.sites = sites;
 
 const cam = new THREE.PerspectiveCamera(55, 1.5, 0.1, 20000);
 // Camera at (x, ground + y, z) looking at (lx, ground + ly, lz); heights are
 // above the ground at the look point. Near-detail tiles follow the camera.
 window.shot = (x, y, z, lx = 0, ly = 4, lz = -1) => {
   forest.update(x, z);
+  // Walkers and signals near the camera, as the drone would see them.
+  const drone = { state: { pos: { x, y: 999, z }, mode: 'manual' }, groundBelow: () => 0 };
+  walkers.update(0.016, drone);
+  signals.update(0.5, drone);
   const g = terrain.heightAt(lx, lz);
   cam.position.set(x, g + y, z);
   cam.lookAt(lx, g + ly, lz);

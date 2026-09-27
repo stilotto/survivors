@@ -6,7 +6,7 @@ import { houseCollide } from './house.js';
 const MAX_SPEED = 16, CLIMB_SPEED = 6, YAW_RATE = 1.6, ACCEL = 2.5;
 const CRUISE = 18, MIN_AGL = 0.3, MAX_AGL = 400;
 const DRAIN = 100 / (12 * 60); // percent per second of flight: 12 minutes
-const CHARGE = 2;               // percent per second on the pad
+const CHARGE = 2;               // percent per second on the pad (the generator; see setCharger)
 const WARP_LEFT = 4;            // seconds of flight a warp leaves
 const START_YAW = 70 * Math.PI / 180; // launch heading 290°: house on the right, buildings on the horizon
 
@@ -18,6 +18,7 @@ export function createDrone(terrain, reducedMotion) {
   const state = { pos, vel, yaw: START_YAW, battery: 100, mode: 'landed', target: null, landing: false, rotor: 0 };
   const houseGround = terrain.heightAt(0, 0);
   const listeners = [];
+  let charger = (pct) => pct; // returns how much charge the house can give
   const say = (msg) => listeners.forEach((fn) => fn(msg));
 
   function flyTo(x, z, agl, land = false) {
@@ -82,7 +83,7 @@ export function createDrone(terrain, reducedMotion) {
       if (state.battery < 20 && !state.lowWarned) { state.lowWarned = true; say('Battery low. Head home.'); }
       if (state.battery <= 0 && !state.deadWarned) { state.deadWarned = true; say('Battery empty. Descending.'); }
     } else if (atHome()) {
-      state.battery = Math.min(100, state.battery + CHARGE * dt);
+      state.battery = Math.min(100, state.battery + charger(Math.min(CHARGE * dt, 100 - state.battery)));
       if (state.battery > 20) state.lowWarned = state.deadWarned = false;
     }
 
@@ -131,6 +132,14 @@ export function createDrone(terrain, reducedMotion) {
   return {
     state, model, flyTo, update, atHome, canWarp, warp,
     goHome: () => flyTo(HOME.x, HOME.z, 40, true),
+    setCharger: (fn) => { charger = fn; },
+    // Back on the pad with a full battery (overnight on the solar panels).
+    reset() {
+      pos.set(HOME.x, terrain.heightAt(HOME.x, HOME.z) + MIN_AGL, HOME.z);
+      vel.set(0, 0, 0);
+      Object.assign(state, { yaw: START_YAW, battery: 100, mode: 'landed', target: null, landing: false,
+        lowWarned: false, deadWarned: false });
+    },
     onMessage: (fn) => listeners.push(fn),
     groundBelow: () => terrain.heightAt(pos.x, pos.z),
   };
