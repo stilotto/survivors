@@ -20,6 +20,13 @@ and scouts the area with a drone. See `DESIGN.md` for the full design.
 
 ## How we work
 
+- **Never name the film.** The house and setting are modeled on a 1968
+  horror film shot in Evans City, but its title (and its director, studio
+  or logo) never appears anywhere: game text, title screen, page title,
+  index card, commit messages, code comments or docs. Say "the film" or
+  "the film-era farmhouse". Build every model and texture ourselves; never
+  copy third-party recreations of the house.
+
 - Plain HTML/CSS/JS with ES modules. No build step, no bundler.
 - Libraries only from a CDN (cdnjs or jsDelivr). Fonts only from Google Fonts.
 - Map data is baked into files in the repo; the game never loads it live from

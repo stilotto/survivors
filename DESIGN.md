@@ -1,8 +1,7 @@
 # Survivors: Design
 
 A browser game (no build step, ES modules, like the other stilotto games). It is
-set in and around Evans City, PA, where the 1968 *Night of the Living Dead* was
-filmed. The group holds out in a farmhouse. Their best asset is a drone.
+set in and around Evans City, PA, where a classic 1968 horror film was shot. The group holds out in a farmhouse. Their best asset is a drone.
 
 ## Setting
 
