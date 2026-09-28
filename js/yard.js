@@ -1,7 +1,7 @@
 // The farmyard: detailed ground, the old shed, the gas pump, and the trees
 // that close in behind the house. Front of the house faces south (+z).
 import * as THREE from 'three';
-import { box, gableWall, gableRoof } from './houseparts.js';
+import { MAT, box, sidingBox, gableWall, gableRoof, windowAt } from './houseparts.js';
 import { buildYardGround, nearbyLanes } from './yardground.js';
 import { plantTrees } from './trees.js';
 
@@ -39,6 +39,34 @@ function shed(ground) {
   const roof = gableRoof(w, d, rise, 0.3, tin);
   roof.position.y = ground + h;
   g.add(gable, roof, box(2.2, 2.3, 0.1, dark, -0.8, ground + 1.15, d / 2 + 0.01));
+  return g;
+}
+
+// A one-car garage in white siding like the house, its hinged doors facing
+// the gravel where the truck parks; one door hangs open a little.
+function garage(ground) {
+  const w = 4.2, d = 6.5, h = 2.7, rise = 1.5;
+  const g = new THREE.Group();
+  g.add(box(w, h + 1, d, sidingBox(h + 1), 0, ground + h / 2 - 0.5, 0));
+  const gable = gableWall(w, rise, d);
+  gable.position.y = ground + h;
+  const roof = gableRoof(d, w, rise, 0.3, MAT.roof);
+  roof.rotation.y = Math.PI / 2;
+  roof.position.y = ground + h;
+  g.add(gable, roof);
+  const doors = new THREE.MeshLambertMaterial({ color: 0x8a8272 });
+  g.add(box(3.2, 2.3, 0.08, dark, 0, ground + 1.15, d / 2 + 0.01)); // the dark inside
+  g.add(box(1.6, 2.3, 0.08, doors, -0.8, ground + 1.15, d / 2 + 0.05));
+  const ajar = box(1.6, 2.3, 0.08, doors, 0.8, 1.15, 0);
+  ajar.geometry.translate(-0.8, 0, 0);
+  const hinge = new THREE.Group();
+  hinge.position.set(1.6, ground, d / 2 + 0.05);
+  hinge.rotation.y = -0.6;
+  hinge.add(ajar);
+  g.add(hinge);
+  g.add(box(1.6, 0.25, 0.1, MAT.trim, 0, ground + 2.45, d / 2 + 0.06));
+  const side = windowAt('x+', w / 2, 0.5, ground + 1.5, 0.6, 0.8);
+  g.add(side);
   return g;
 }
 
@@ -104,16 +132,19 @@ export function buildYard(terrain, roads, renderer) {
   const lanes = nearbyLanes(roads);
   group.add(buildYardGround(terrain, lanes, renderer));
 
-  const SHED = [17, -22], PUMP = [14, -11];
+  const SHED = [17, -22], PUMP = [14, -11], GARAGE = [24, -14];
   const s = shed(terrain.surfaceAt(...SHED));
   s.position.set(SHED[0], 0, SHED[1]);
   s.rotation.y = -0.12;
   const p = gasPump(terrain.surfaceAt(...PUMP));
   p.position.set(PUMP[0], 0, PUMP[1]);
   p.rotation.y = -Math.PI / 2;
-  group.add(s, p);
+  const gr = garage(terrain.surfaceAt(...GARAGE));
+  gr.position.set(GARAGE[0], 0, GARAGE[1]);
+  gr.rotation.y = -Math.PI / 2 - 0.1; // doors face west, toward the gravel
+  group.add(s, p, gr);
 
-  const keepClear = [[0, 0, 12], [SHED[0], SHED[1], 6], [PUMP[0], PUMP[1], 4], [9, -14, 7], [0, 14, 6]];
+  const keepClear = [[0, 0, 12], [SHED[0], SHED[1], 6], [PUMP[0], PUMP[1], 4], [GARAGE[0], GARAGE[1], 7], [9, -14, 7], [0, 14, 6]];
   group.add(plantTrees(yardTrees(terrain, lanes, keepClear)));
   return group;
 }

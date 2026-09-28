@@ -24,7 +24,7 @@ const THREE_VERSION = '0.186.1'; // keep in step with index.html
 const VIEWS = {
   house: [-18, 5, 20, 0, 4, -1], // front-left of the farmhouse
   poster: [-6, 2, 45, 0, 5, -5], // low across the meadow, like the film poster
-  yard: [30, 4, -2, 5, 3, -12], // east side: shed and gas pump
+  yard: [36, 6, 6, 10, 2, -16], // east side: garage, shed and gas pump
   air: [300, 250, 600, -200, 0, -200], // countryside around the house
   downtown: [-2700, 90, 1880, -2868, 0, 1737], // Evans City, Main St
   high: [0, 800, 1500, 0, 0, -1000], // wide view of the map

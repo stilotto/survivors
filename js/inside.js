@@ -3,7 +3,8 @@
 // windows, the press in the cellar). The dining room is where the group
 // plans: jobs, the drone prints, the journal.
 import { SKILLS, SKILL_NAMES, HURT } from './people.js';
-import { TASKS, AWAY } from './dayend.js';
+import { TASKS, AWAY, OUT } from './dayend.js';
+import { emptied } from './outbuildings.js';
 import { milesFromHome } from './sites.js';
 import { ROOMS, roomById, cutaway } from './rooms.js';
 import { canvasFor } from './sketch.js';
@@ -64,8 +65,9 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
       const o = game.orders[p.id] ?? { task: 'rest' };
       const opts = Object.entries(TASKS).map(([k, label]) => {
         const none = (k === 'run' && !runs.length) || (k === 'recruit' && !talks.length);
-        const off = none || (AWAY.has(k) && p.hurt >= 2);
-        const note = none ? (k === 'run' ? ' (needs a drone photo)' : ' (no one spotted yet)') : '';
+        const bare = OUT.has(k) && emptied(game, k);
+        const off = none || bare || ((AWAY.has(k) || OUT.has(k)) && p.hurt >= 2);
+        const note = none ? (k === 'run' ? ' (needs a drone photo)' : ' (no one spotted yet)') : bare ? ' (nothing left)' : '';
         return `<option value="${k}"${o.task === k ? ' selected' : ''}${off ? ' disabled' : ''}>${label}${note}</option>`;
       }).join('');
       const list = o.task === 'run' ? runs : o.task === 'recruit' ? talks : null;

@@ -4,12 +4,15 @@ import { GOODS, siteRef, milesFromHome, neighborhood } from './sites.js';
 import { makePerson, bestAt } from './people.js';
 import { latestPhoto } from './game.js';
 import { arrive, resolveNight } from './visitors.js';
+import { searchOutbuilding, emptied } from './outbuildings.js';
 
 export const TASKS = {
   rest: 'Rest', guard: 'Keep watch at night', fortify: 'Board up the house', garden: 'Work the garden',
-  reload: 'Load shells at the press', watch: 'Watch the drone feed', run: 'Supply run', recruit: 'Go talk to them',
+  reload: 'Load shells at the press', watch: 'Watch the drone feed', shed: 'Search the shed', garage: 'Search the garage',
+  run: 'Supply run', recruit: 'Go talk to them',
 };
 export const AWAY = new Set(['run', 'recruit']);
+export const OUT = new Set(['shed', 'garage']); // out in the yard, back by dark
 const WELL = 4; // water a day from the hand pump
 
 const names = (list) => (list.length < 2 ? list[0] : `${list.slice(0, -1).join(', ')} and ${list.at(-1)}`);
@@ -120,7 +123,7 @@ export function endDay(game, sites, roads) {
 
   for (const p of game.crew) {
     const o = game.orders[p.id] ?? { task: 'rest' };
-    if (AWAY.has(o.task) && p.hurt >= 2) { game.orders[p.id] = { task: 'rest' }; continue; }
+    if ((AWAY.has(o.task) || OUT.has(o.task)) && p.hurt >= 2) { game.orders[p.id] = { task: 'rest' }; continue; }
     if (AWAY.has(o.task) && siteById.has(o.site)) {
       const key = `${o.task}:${o.site}`;
       if (!bySite.has(key)) bySite.set(key, []);
@@ -135,6 +138,12 @@ export function endDay(game, sites, roads) {
   // At home.
   const home = alive().filter((p) => !AWAY.has(game.orders[p.id]?.task));
   const doing = (t) => home.filter((p) => (game.orders[p.id]?.task ?? 'rest') === t);
+  for (const id of OUT) {
+    const party = doing(id);
+    if (!party.length) continue;
+    searchOutbuilding(game, id, party, doing('watch')[0], lines);
+    if (emptied(game, id)) for (const p of party) game.orders[p.id] = { task: 'rest' };
+  }
   for (const p of doing('garden')) game.res.food += 1 + Math.round(p.skills.scav / 2);
   if (doing('garden').length) lines.push(`${firstNames(doing('garden'))} worked the garden.`);
   const boarded = [];
