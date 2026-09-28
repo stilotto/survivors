@@ -141,6 +141,22 @@ export function createWalkers(terrain) {
     forEachNear(x, z, r, fn) {
       for (const k of w) if (Math.abs(k.x - x) < r && Math.abs(k.z - z) < r) fn(k.x, terrain.surfaceAt(k.x, k.z), k.z, k);
     },
+    // The night's attackers: n of them out in the front meadow, closing on
+    // the house. Returns them so the scene can drop the ones that get shot.
+    attack(n, seed) {
+      const r = rng(seed, 77), list = [];
+      for (let i = 0; i < n && w.length < MAX; i++) {
+        const a = Math.PI * (0.2 + r() * 0.6), d = 12 + r() * 38;
+        add(Math.cos(a) * d, 2 + Math.sin(a) * d, 0, 2, 7, 3, -2, r);
+        const k = w.at(-1);
+        k.pause = r() * 2;
+        pickTarget(k, r());
+        list.push(k);
+      }
+      recheck = 0;
+      return list;
+    },
+    drop(k) { w = w.filter((o) => o !== k); active = active.filter((o) => o !== k); },
     get noticing() { return active.filter((k) => k.noticed).length; },
     get all() { return w; },
   };

@@ -192,23 +192,33 @@ export function endDay(game, sites, roads) {
   const guards = doing('guard');
   const defense = game.fort + guards.reduce((a, p) => a + p.skills.fight * 1.5, 0) + home.length * 0.4;
   const attack = game.threat * rand(0.3, 1.1);
+  // For the night scene: how many came, who fought, how it ended.
+  const night = { size: Math.min(24, Math.max(3, Math.round(attack * 2))), guards: guards.map((p) => p.first),
+    shots: 0, outcome: 'quiet', hurt: null, lost: false };
   if (attack < 1) lines.push('Quiet night.');
   else if (attack <= defense) {
+    night.outcome = 'held';
     lines.push(guards.length ? pick([`They came at the house in the night. ${firstNames(guards)} held them off.`,
       `${firstNames(guards)} spent the night at the upstairs windows. A few came close. None got in.`,
       `Shapes in the yard around three. ${firstNames(guards)} dealt with them.`])
       : pick(['Something scratched at the back door all night. The boards held.',
         'We heard them on the porch until dawn. Nobody slept.']));
     if (guards.length) {
-      game.res.ammo = Math.max(0, game.res.ammo - Math.ceil(attack / 3));
+      night.shots = Math.min(game.res.ammo, Math.ceil(attack / 3));
+      game.res.ammo -= night.shots;
       game.threat = Math.max(0, game.threat - guards.reduce((a, p) => a + p.skills.fight * 0.4, 0));
     }
   } else {
+    night.outcome = 'breach';
+    night.shots = guards.length ? Math.min(game.res.ammo, 2) : 0;
+    game.res.ammo -= night.shots;
     game.fort = Math.max(0, game.fort - rand(1, 2.5));
     const victim = home[Math.floor(Math.random() * home.length)];
     lines.push('They broke through a window in the night.');
     if (victim) {
       victim.hurt += attack > defense * 2 ? 3 : 1;
+      night.hurt = victim.first;
+      night.lost = victim.hurt > 2;
       lines.push(victim.hurt > 2 ? `We lost ${victim.first}.` : `${victim.first} got hurt pushing them back out.`);
     }
   }
@@ -225,6 +235,7 @@ export function endDay(game, sites, roads) {
 
   for (const [id, o] of Object.entries(game.orders)) if (AWAY.has(o.task)) game.orders[id] = { task: 'rest' };
   const entry = { day: game.day, when: 'night', lines };
+  Object.defineProperty(entry, 'night', { value: night }); // for the scene, not the save
   game.day++;
   if (!game.crew.length) {
     game.over = true;

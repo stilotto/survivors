@@ -26,6 +26,7 @@ import { createAmbient } from './ambient.js';
 import { newGame, loadGame, saveGame, hasSave, clearSave, addPhoto } from './game.js';
 import { endDay } from './dayend.js';
 import { createPorch, visitorToday } from './visitors.js';
+import { createNight } from './night.js';
 import { bestAt } from './people.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -38,7 +39,8 @@ const scene = new THREE.Scene();
 const sky = new THREE.Color(0xb8bdb8);
 scene.background = sky;
 scene.fog = new THREE.Fog(sky, 800, 7000);
-scene.add(new THREE.HemisphereLight(0xdfe3e8, 0x4a4a38, 1.6));
+const hemi = new THREE.HemisphereLight(0xdfe3e8, 0x4a4a38, 1.6);
+scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff4e0, 1.4);
 sun.position.set(-0.5, 1, 0.35);
 scene.add(sun);
@@ -133,12 +135,18 @@ async function init() {
       if (v && !v.said) { v.said = true; subs.say(spotter(), 'Somebody\'s on the front porch, right under the pad. They\'re waiting on an answer.'); }
     },
     onEnd: () => {
-      endDay(game, sites, data.roads);
+      const entry = endDay(game, sites, data.roads);
       drone.reset();
       drone.state.noGas = false;
       watcher.newDay();
       populate();
       saveGame(game, sites);
+      // When they come in the night, watch it happen before reading about it.
+      if (entry.night.outcome !== 'quiet') {
+        $('#table').hidden = true;
+        $('#hud').hidden = true;
+        night.open(entry.night, entry.day, game.seed);
+      }
     },
     onRestart: () => { clearSave(); location.reload(); },
     onLook: (room, i) => {
@@ -153,6 +161,11 @@ async function init() {
     terrain, walkers, ambient,
     onClose: (room) => { $('#hud').hidden = false; table.open(room); },
   });
+  const night = createNight($('#night'), {
+    scene, lights: [hemi, sun], terrain, walkers, reducedMotion,
+    onDone: () => { populate(); $('#hud').hidden = false; table.open('journal'); },
+  });
+
   // Seen from the house: a stand-in "drone" at the window, which the dead ignore.
   const atWindow = { state: { pos: { x: 0, y: 0, z: 0 }, mode: 'landed' }, groundBelow: () => -Infinity };
   const AIRCRAFT = {
@@ -172,8 +185,8 @@ async function init() {
     view: () => { viewBtn.textContent = rig.toggle() === 'drone' ? 'View' : 'Cam'; },
     home: () => drone.goHome(),
     warp: () => drone.warp(),
-    photo: () => { if (!map.isOpen && !table.isOpen && !lookout.isOpen) takePhoto(); },
-    house: () => { if (!table.isOpen && !lookout.isOpen) { controls.clear(); if (map.isOpen) map.close(); table.open(); } },
+    photo: () => { if (!map.isOpen && !table.isOpen && !lookout.isOpen && !night.isOpen) takePhoto(); },
+    house: () => { if (!table.isOpen && !lookout.isOpen && !night.isOpen) { controls.clear(); if (map.isOpen) map.close(); table.open(); } },
   };
   const controls = createControls($('#hud'), actions);
   $('#btn-map').onclick = actions.map;
@@ -192,11 +205,21 @@ async function init() {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
     porch.show(visitorToday(game)?.people.length ?? 0);
-    const input = map.isOpen || table.isOpen || lookout.isOpen ? { fwd: 0, strafe: 0, climb: 0, yaw: 0, tilt: 0 } : controls.read();
+    const input = map.isOpen || table.isOpen || lookout.isOpen || night.isOpen ? { fwd: 0, strafe: 0, climb: 0, yaw: 0, tilt: 0 } : controls.read();
     drone.update(dt, input);
     clock += dt;
     ambient.update(dt);
-    if (lookout.isOpen) {
+    if (night.isOpen) {
+      night.update(dt);
+      if (night.isOpen) {
+        Object.assign(atWindow.state.pos, night.pos);
+        forest.update(atWindow.state.pos.x, atWindow.state.pos.z);
+        walkers.update(dt, atWindow);
+        drone.model.visible = false; // on the pad, right under the window
+        night.render(renderer);
+        drone.model.visible = true;
+      }
+    } else if (lookout.isOpen) {
       const p = lookout.pos;
       Object.assign(atWindow.state.pos, p);
       forest.update(p.x, p.z);
