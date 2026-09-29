@@ -100,7 +100,7 @@ try {
     await page.click('#launch');
     await page.click('#btn-house');
     await page.click(`[data-room="${room}"]`);
-    await page.click(`[data-look="${n}"]`);
+    await page.click(`.peek >> nth=${n}`);
     await page.waitForTimeout(1500);
     const file = join(outDir, `look-${room}-${n}.png`);
     await page.screenshot({ path: file });

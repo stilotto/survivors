@@ -7,7 +7,7 @@ import { TASKS, AWAY, OUT } from './dayend.js';
 import { emptied } from './outbuildings.js';
 import { milesFromHome } from './sites.js';
 import { ROOMS, roomById, cutaway } from './rooms.js';
-import { canvasFor } from './sketch.js';
+import { canvasFor, W, H } from './sketch.js';
 import { windowsFor } from './lookout.js';
 import { visitorToday, letIn, turnAway, medicNote } from './visitors.js';
 
@@ -132,6 +132,21 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
     }
   }
 
+  // The windows in a room's picture are secret buttons: tap one to look out.
+  function peepholes(ctx, room) {
+    const looks = windowsFor(room.id);
+    if (!looks.length) return;
+    (ctx.windows ?? []).forEach((w, i) => {
+      const b = document.createElement('button');
+      b.className = 'peek';
+      b.setAttribute('aria-label', `Look out the window: ${looks[i % looks.length].name.toLowerCase()}`);
+      Object.assign(b.style, { left: `${(w.x / W) * 100}%`, top: `${(w.y / H) * 100}%`,
+        width: `${(w.w / W) * 100}%`, height: `${(w.h / H) * 100}%` });
+      b.onclick = () => { el.hidden = true; onLook(room, i % looks.length); };
+      ctx.canvas.parentElement.append(b);
+    });
+  }
+
   function render() {
     const game = getGame();
     const room = roomById(where);
@@ -157,22 +172,19 @@ export function createInside(el, { getGame, getDrone, sites, onEnd, onClose, onR
       return;
     }
 
-    room.draw(canvasFor(body), game, getDrone());
+    const ctx = canvasFor(body);
+    room.draw(ctx, game, getDrone());
+    peepholes(ctx, room);
     const text = document.createElement('div');
     text.className = 'room-text';
-    const looks = windowsFor(room.id);
     text.innerHTML = (['living', 'dining'].includes(room.id) ? door(game) : '')
       + `<p>${esc(room.text)}</p>`
-      + (looks.length ? `<div class="looks">${looks.map((v, i) => `<button data-look="${i}">Look out: ${esc(v.name.toLowerCase())}</button>`).join('')}</div>` : '')
       + (room.job ? staff(game, room) : '')
       + (room.id === 'bedrooms' ? roster(game) : '')
       + (room.plans ? { people, photos, journal }[tab](game) : '');
     body.append(text);
     wireDoor(game);
 
-    for (const b of body.querySelectorAll('[data-look]')) {
-      b.onclick = () => { el.hidden = true; onLook(room, +b.dataset.look); };
-    }
     for (const s of body.querySelectorAll('[data-assign]')) {
       s.onchange = () => { if (s.value) { game.orders[s.value] = { task: s.dataset.assign }; render(); } };
     }

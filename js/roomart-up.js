@@ -38,6 +38,7 @@ export function bathroom(ctx, game) {
     ctx.fillStyle = '#eee'; ctx.fillRect(x, y - 28, 16, 5);
   }
   ctx.fillStyle = '#9a9a92'; for (const y of [82, 126, 170]) ctx.fillRect(62, y, 166, 3);
+  windowAt(ctx, 470, 40, 90, 120, boardsFor(game.fort));
   // Clawfoot tub; the water line is our water.
   const level = Math.min(1, game.res.water / 30);
   ctx.fillStyle = '#f0f0ea'; ctx.fillRect(320, 220, 290, 90);

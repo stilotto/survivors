@@ -9,7 +9,10 @@ export function canvasFor(el) {
   const r = Math.min(devicePixelRatio || 1, 2);
   c.width = W * r; c.height = H * r;
   c.className = 'room-art';
-  el.append(c);
+  const wrap = document.createElement('div');
+  wrap.className = 'room-art-wrap';
+  wrap.append(c);
+  el.append(wrap);
   const ctx = c.getContext('2d');
   ctx.scale(r, r);
   return ctx;
@@ -35,7 +38,9 @@ export function room(ctx, wall, floor, stripes = true, floorY = 270) {
 }
 
 // A window onto a gray sky; boards nailed across it as the house is fortified.
+// Each window drawn is remembered on the context, so it can be tapped.
 export function windowAt(ctx, x, y, w, h, boards = 0, sky = '#aeb4b0', r = random(x, y)) {
+  (ctx.windows ??= []).push({ x, y, w, h });
   ctx.fillStyle = '#3a342c';
   ctx.fillRect(x - 6, y - 6, w + 12, h + 12);
   ctx.fillStyle = sky;

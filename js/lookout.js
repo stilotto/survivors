@@ -23,7 +23,7 @@ const WINDOWS = {
     { name: 'The back field', x: -2.25, y: 1.5, z: -8.5, face: 'n', boards: true }],
   dining: [{ name: 'The side yard', x: 5.25, y: 1.5, z: 2, face: 'e', boards: true }],
   living: [{ name: 'The front yard', x: 3.3, y: 1.5, z: 4, face: 's', boards: true },
-    { name: 'West side', x: -5.25, y: 1.5, z: -1.3, face: 'w', boards: true }],
+    { name: 'West side', x: -5.25, y: 1.5, z: 0.5, face: 'w', boards: true }],
 };
 
 export const windowsFor = (room) => WINDOWS[room] ?? [];
